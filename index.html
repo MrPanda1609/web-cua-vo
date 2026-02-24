@@ -1122,6 +1122,20 @@
         });
       });
     }
+    function downloadLoveFile() {
+  const content = "yêu vợ"; // nội dung trong file
+  const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "yeu-vo.txt"; // tên file tải về
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+
+  URL.revokeObjectURL(url);
+}
 
     // ----------- Accordion -----------
     function setupAccordion() {
@@ -1178,12 +1192,19 @@
     }
 
     function setupForm() {
-      $("#sendMessageBtn").addEventListener("click", () => {
-        if (!validateForm()) return;
-        showToast("Đã lưu lời nhắn của vợ");
-        $("#messageInput").value = "";
-      });
-    }
+  $("#sendMessageBtn").addEventListener("click", () => {
+    if (!validateForm()) return;
+
+    // Hiện thông báo
+    showToast("Đã lưu lời nhắn của vợ (trong tim tớ 😌)");
+
+    // Gọi tải file text "yêu vợ"
+    downloadLoveFile();
+
+    // Xoá nội dung ô nhập
+    $("#messageInput").value = "";
+  });
+}
 
     // ----------- Modal lời khen -----------
     const compliments = [
