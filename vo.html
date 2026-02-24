@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Trang hồng của vợ 💗</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --pink: #ff8fc7;
+      --pink-soft: #ffe4f7;
+      --pink-strong: #ff4f9a;
+      --white: #ffffff;
+      --text-main: #333333;
+      --shadow-soft: 0 10px 25px rgba(255, 143, 199, 0.15);
+      --shadow-hover: 0 15px 35px rgba(255, 79, 154, 0.25);
+      --radius-lg: 20px;
+      --transition-fast: 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #fff0f8, #ffe4f7, #ffffff);
+      background-size: 200% 200%;
+      animation: gradientBG 10s ease infinite;
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+      overflow-x: hidden;
+    }
+
+    /* Background Animation */
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Fade-in-up Animation for layout */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Floating Heart/Petal Animation */
+    @keyframes fall {
+      0% { transform: translateY(-10vh) rotate(0deg) scale(0.8); opacity: 0; }
+      10% { opacity: 1; }
+      100% { transform: translateY(100vh) rotate(360deg) scale(1.2); opacity: 0; }
+    }
+
+    .particle {
+      position: fixed;
+      top: -10%;
+      z-index: 0;
+      pointer-events: none;
+      user-select: none;
+      animation: fall linear forwards;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 1100px;
+      background: rgba(255, 255, 255, 0.85);
+      border-radius: 28px;
+      box-shadow: 0 20px 50px rgba(255, 143, 199, 0.2);
+      padding: 24px 24px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      position: relative;
+      z-index: 10;
+      animation: fadeInUp 0.8s ease-out forwards;
+    }
+
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 10px;
+      border-bottom: 2px dashed #ffe4f7;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    /* Logo Floating Animation */
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    .logo {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--pink-strong), var(--pink));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 24px;
+      box-shadow: 0 8px 20px rgba(255, 79, 154, 0.5);
+      animation: float 3s ease-in-out infinite;
+    }
+
+    h1 {
+      font-size: 24px;
+      font-weight: 800;
+      background: linear-gradient(90deg, #ff4f9a, #ff8fc7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.5px;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: #888;
+      margin-top: 2px;
+    }
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .nav-btn {
+      border: none;
+      background: #fff0f8;
+      color: #c7367c;
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition-fast);
+      box-shadow: 0 4px 10px rgba(255, 143, 199, 0.1);
+    }
+
+    .nav-btn:hover {
+      background: #ffc8ec;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(255, 143, 199, 0.3);
+    }
+
+    .nav-btn.active {
+      background: linear-gradient(135deg, var(--pink-strong), var(--pink));
+      color: white;
+      box-shadow: 0 6px 15px rgba(255, 79, 154, 0.4);
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      gap: 20px;
+    }
+
+    @media (max-width: 850px) {
+      main { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: var(--shadow-soft);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      position: relative;
+      overflow: hidden;
+      transition: var(--transition-fast);
+      border: 1px solid rgba(255, 228, 247, 0.5);
+      animation: fadeInUp 0.6s ease-out forwards;
+      opacity: 0; /* Cho animation */
+    }
+    
+    .card:nth-child(1) { animation-delay: 0.1s; }
+    .card:nth-child(2) { animation-delay: 0.2s; }
+    .card:nth-child(3) { animation-delay: 0.3s; }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-hover);
+      border-color: #ffc8ec;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top right, rgba(255, 143, 199, 0.08), transparent 60%);
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .card:hover::before { opacity: 0.8; }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #ff4f9a;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .pill {
+      font-size: 11px;
+      background: linear-gradient(135deg, #ffe4f7, #ffd4ef);
+      color: #c7367c;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-weight: 600;
+      box-shadow: inset 0 2px 4px rgba(255,255,255,0.5);
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .greeting {
+      font-size: 16px;
+      font-weight: 600;
+      color: #444;
+      margin-top: 4px;
+    }
+
+    .clock {
+      font-family: "JetBrains Mono", Consolas, monospace;
+      font-size: 16px;
+      font-weight: bold;
+      padding: 8px 14px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #fef0f8, #ffe4f7);
+      color: #ff4f9a;
+      box-shadow: inset 0 2px 5px rgba(255, 143, 199, 0.2);
+    }
+
+    /* Toggle theme switch */
+    .toggle-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #555;
+    }
+
+    .toggle {
+      width: 50px;
+      height: 26px;
+      border-radius: 999px;
+      background: #ffd4ef;
+      border: 2px solid #ff9fd3;
+      padding: 2px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      transition: var(--transition-fast);
+      position: relative;
+    }
+
+    .toggle-circle {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: white;
+      box-shadow: 0 2px 6px rgba(255, 79, 154, 0.4);
+      transition: var(--transition-fast);
+      transform: translateX(0);
+    }
+
+    .toggle.on {
+      background: #ff4f9a;
+      border-color: #ff4f9a;
+      box-shadow: 0 0 12px rgba(255, 79, 154, 0.5);
+    }
+
+    .toggle.on .toggle-circle {
+      transform: translateX(24px);
+    }
+
+    /* To-do list */
+    .todo-input-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .input {
+      flex: 1;
+      min-width: 160px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 2px solid #ffe4f7;
+      font-size: 14px;
+      outline: none;
+      background: #fffafc;
+      transition: var(--transition-fast);
+    }
+
+    .input:focus {
+      border-color: #ff4f9a;
+      box-shadow: 0 0 0 3px rgba(255, 79, 154, 0.2);
+      background: #ffffff;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 999px;
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition-fast);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    /* Glow effect on hover */
+    .btn-primary {
+      background: linear-gradient(135deg, #ff4f9a, #ff8fc7);
+      color: white;
+      box-shadow: 0 4px 12px rgba(255, 79, 154, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(255, 79, 154, 0.5);
+    }
+    
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-ghost {
+      background: #ffe4f7;
+      color: #c7367c;
+    }
+
+    .btn-ghost:hover {
+      background: #ffc8ec;
+      transform: translateY(-2px);
+    }
+
+    .todo-filters {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+
+    .chip {
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      background: #fff2fa;
+      color: #bf3275;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: var(--transition-fast);
+    }
+
+    .chip:hover {
+      background: #ffe4f7;
+    }
+
+    .chip.active {
+      border-color: #ff4f9a;
+      background: #ffebf9;
+      box-shadow: 0 2px 8px rgba(255, 79, 154, 0.15);
+    }
+
+    .todo-list {
+      list-style: none;
+      margin-top: 8px;
+      max-height: 240px;
+      overflow-y: auto;
+      padding-right: 6px;
+    }
+    
+    .todo-list::-webkit-scrollbar { width: 6px; }
+    .todo-list::-webkit-scrollbar-thumb { background: #ffc8ec; border-radius: 10px; }
+
+    .todo-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 14px;
+      background: #fff8fd;
+      margin-bottom: 8px;
+      border: 1px solid #ffe0f5;
+      font-size: 14px;
+      transition: var(--transition-fast);
+    }
+
+    .todo-item:hover {
+      transform: translateX(4px);
+      border-color: #ffc8ec;
+      box-shadow: 0 4px 10px rgba(255, 143, 199, 0.1);
+    }
+
+    .todo-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .todo-item input[type="checkbox"] {
+      accent-color: #ff4f9a;
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .todo-item input[type="checkbox"]:hover {
+      transform: scale(1.1);
+    }
+
+    .todo-text {
+      word-break: break-word;
+      font-weight: 500;
+    }
+
+    .todo-item.done {
+      opacity: 0.6;
+      background: #fdf2fb;
+      border-color: transparent;
+    }
+
+    .todo-item.done .todo-text {
+      text-decoration: line-through;
+      color: #999;
+    }
+
+    .tag {
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #ffe4f7;
+      color: #c7367c;
+      font-weight: 600;
+    }
+
+    .icon-btn {
+      border: none;
+      background: #fff2fa;
+      color: #e53964;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border-radius: 50%;
+      transition: var(--transition-fast);
+      font-size: 14px;
+    }
+
+    .icon-btn:hover {
+      background: #ffe0f7;
+      transform: rotate(10deg) scale(1.1);
+    }
+
+    /* Counter */
+    .counter-display {
+      font-size: 42px;
+      font-weight: 800;
+      color: transparent;
+      background: linear-gradient(135deg, #ff4f9a, #ff8fc7);
+      -webkit-background-clip: text;
+      text-align: center;
+      margin: 10px 0 16px;
+      text-shadow: 0 4px 15px rgba(255, 79, 154, 0.2);
+    }
+
+    .counter-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: #fff1fb;
+      color: #bf3275;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: inset 0 2px 4px rgba(255,255,255,0.6);
+    }
+
+    /* Message form */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 12px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+      max-height: 150px;
+      padding: 12px;
+      border-radius: 16px;
+      border: 2px solid #ffe4f7;
+      font-size: 14px;
+      outline: none;
+      background: #fffafc;
+      transition: var(--transition-fast);
+      font-family: inherit;
+    }
+
+    textarea:focus {
+      border-color: #ff4f9a;
+      box-shadow: 0 0 0 3px rgba(255, 79, 154, 0.2);
+      background: #ffffff;
+    }
+
+    .error-text {
+      font-size: 12px;
+      color: #e53964;
+      min-height: 16px;
+      font-weight: 500;
+    }
+
+    /* Accordion */
+    .accordion {
+      border-radius: 16px;
+      border: 1px solid #ffe0f5;
+      overflow: hidden;
+      background: #fffafc;
+      box-shadow: inset 0 2px 10px rgba(255, 143, 199, 0.05);
+    }
+
+    .accordion-item + .accordion-item {
+      border-top: 1px solid #ffe0f5;
+    }
+
+    .accordion-header {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s;
+    }
+
+    .accordion-header:hover {
+      background: #ffeef9;
+    }
+
+    .accordion-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .accordion-icon {
+      font-size: 12px;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      color: #ff4f9a;
+    }
+
+    .accordion-header.active .accordion-icon {
+      transform: rotate(90deg);
+    }
+
+    .accordion-content {
+      padding: 0 16px 12px;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #555;
+      display: none;
+      animation: fadeInUp 0.3s ease-out;
+    }
+
+    .accordion-content.open {
+      display: block;
+    }
+
+    footer {
+      font-size: 13px;
+      font-weight: 500;
+      color: #888;
+      text-align: center;
+      margin-top: 10px;
+      padding: 10px;
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(255, 143, 199, 0.2);
+      backdrop-filter: blur(5px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes popUp {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal {
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 24px 24px 20px;
+      max-width: 340px;
+      width: calc(100% - 40px);
+      box-shadow: 0 25px 50px rgba(255, 79, 154, 0.3);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      animation: popUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .modal-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #ff4f9a;
+      margin-bottom: 10px;
+    }
+
+    .modal-text {
+      font-size: 14px;
+      line-height: 1.5;
+      color: #555;
+      margin-bottom: 20px;
+    }
+
+    .modal-heart {
+      font-size: 40px;
+      margin-bottom: 10px;
+      animation: float 2s ease-in-out infinite;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 30px;
+      transform: translateX(-50%) translateY(150%);
+      background: linear-gradient(135deg, #ff4f9a, #ff8fc7);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 10px 25px rgba(255, 79, 154, 0.5);
+      opacity: 0;
+      transition: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Pink theme mode / Super Pink */
+    body.pink-mode {
+      background: linear-gradient(-45deg, #ff9a9e, #fecfef, #ffc3a0);
+      background-size: 400% 400%;
+      animation: gradientBG 8s ease infinite;
+    }
+
+    body.pink-mode .app {
+      background: rgba(255, 255, 255, 0.9);
+      border-color: rgba(255, 255, 255, 0.8);
+      box-shadow: 0 25px 60px rgba(255, 79, 154, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <div id="particles"></div>
+
+  <div class="app">
+    <header>
+      <div class="brand">
+        <div class="logo">♡</div>
+        <div>
+          <h1>Góc hồng của vợ</h1>
+          <div class="subtitle">Trang web màu hồng có đủ trò vui nè 💗</div>
+        </div>
+      </div>
+      <div>
+        <nav>
+          <button class="nav-btn active" data-scroll="#dash">Tổng quan</button>
+          <button class="nav-btn" data-scroll="#todo">Việc của vợ</button>
+          <button class="nav-btn" data-scroll="#fun">Vui vui</button>
+          <button class="nav-btn" data-scroll="#msg">Nhắn gửi</button>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section>
+        <div class="card" id="dash">
+          <div class="row">
+            <div>
+              <div class="card-title">
+                Xin chào vợ 💕
+                <span class="pill">Dashboard</span>
+              </div>
+              <div class="greeting" id="greetingText">Chúc vợ một ngày hồng rực rỡ!</div>
+            </div>
+            <div class="clock" id="clock">--:--:--</div>
+          </div>
+          <div class="row" style="margin-top: 10px;">
+            <div class="toggle-wrapper">
+              <span>Chế độ siêu hồng ✨</span>
+              <div class="toggle" id="themeToggle">
+                <div class="toggle-circle"></div>
+              </div>
+            </div>
+            <span class="badge" id="moodBadge">Mood: 💗 Dễ thương</span>
+          </div>
+        </div>
+
+        <div class="card" id="todo">
+          <div class="card-title">
+            Việc cần làm của vợ
+            <span class="pill">To-do</span>
+          </div>
+
+          <div class="todo-input-row">
+            <input
+              id="todoInput"
+              class="input"
+              type="text"
+              placeholder="Nhập việc cần làm..."
+            />
+            <button class="btn btn-primary" id="addTodoBtn">
+              <span style="font-size: 16px">+</span> Thêm
+            </button>
+          </div>
+
+          <div class="todo-filters">
+            <button class="chip active" data-filter="all">Tất cả</button>
+            <button class="chip" data-filter="pending">Chưa xong</button>
+            <button class="chip" data-filter="done">Đã xong</button>
+          </div>
+
+          <ul class="todo-list" id="todoList"></ul>
+        </div>
+      </section>
+
+      <section>
+        <div class="card" id="fun">
+          <div class="card-title">
+            Bộ đếm dễ thương
+            <span class="pill">Counter</span>
+          </div>
+          <div style="text-align: center; font-size: 13px; color: #666;">
+            Đếm số lần vợ dễ thương / chăm chỉ / chịu khó… tuỳ vợ 😂
+          </div>
+          <div class="counter-display" id="counterValue">0</div>
+          <div class="counter-buttons">
+            <button class="btn btn-ghost" data-counter="dec">- Giảm</button>
+            <button class="btn btn-primary" data-counter="inc">+ Tăng</button>
+            <button class="btn btn-ghost" data-counter="reset">Reset</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            Góc tips cho vợ
+            <span class="pill">Notebook</span>
+          </div>
+
+          <div class="accordion" id="accordion">
+            <div class="accordion-item">
+              <div class="accordion-header">
+                <div class="accordion-title">
+                  <span class="accordion-icon">▶</span>
+                  <span>Mẹo tập trung học / làm việc</span>
+                </div>
+              </div>
+              <div class="accordion-content">
+                Thử đặt timer 25 phút tập trung, 5 phút nghỉ (Pomodoro).<br><br>
+                Trong lúc tập trung hãy tắt thông báo, để điện thoại xa xa một tí nè.
+              </div>
+            </div>
+
+            <div class="accordion-item">
+              <div class="accordion-header">
+                <div class="accordion-title">
+                  <span class="accordion-icon">▶</span>
+                  <span>Ý tưởng tự thưởng cho bản thân</span>
+                </div>
+              </div>
+              <div class="accordion-content">
+                Hoàn thành xong 3 việc ➜ cho phép bản thân:<br>
+                🌸 Xem 1 video yêu thích<br>
+                🌸 Ăn nhẹ món vợ thích<br>
+                🌸 Nghe 1 bài nhạc chill 💗
+              </div>
+            </div>
+
+            <div class="accordion-item">
+              <div class="accordion-header">
+                <div class="accordion-title">
+                  <span class="accordion-icon">▶</span>
+                  <span>Lời nhắc nhỏ xíu</span>
+                </div>
+              </div>
+              <div class="accordion-content">
+                🥤 Uống nước thường xuyên nha.<br>
+                🤸‍♀️ Thỉnh thoảng đứng dậy vươn vai.<br>
+                ✨ Đừng quên là vợ giỏi hơn vợ nghĩ nhiều lắm đó!
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" id="msg">
+          <div class="card-title">
+            Gửi lời nhắn
+            <span class="pill">Mini form</span>
+          </div>
+
+          <div class="form-group">
+            <label for="nameInput">Tên gọi (nickname của vợ)</label>
+            <input id="nameInput" class="input" type="text" placeholder="Ví dụ: Bé Hồng, Công chúa..." />
+            <div class="error-text" id="nameError"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="messageInput">Lời nhắn</label>
+            <textarea
+              id="messageInput"
+              placeholder="Viết điều gì đó dễ thương hoặc điều vợ đang nghĩ..."
+            ></textarea>
+            <div class="error-text" id="messageError"></div>
+          </div>
+
+          <div class="row" style="margin-top: 5px;">
+            <button class="btn btn-primary" id="sendMessageBtn">Gửi lời nhắn 💌</button>
+            <button class="btn btn-ghost" id="complimentBtn">Nhận lời khen ✨</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      Làm bởi <strong>ai cũng biết</strong> – trợ lý hồng của vợ 💗 | Vợ muốn thêm chức năng gì nữa thì nói tớ nhé.
+    </footer>
+  </div>
+
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal">
+      <div class="modal-heart">💖</div>
+      <div class="modal-title">Lời khen dành cho vợ</div>
+      <div class="modal-text" id="complimentText">
+        Hôm nay vợ đã cố gắng rất nhiều rồi, tự ôm mình một cái nha 💗
+      </div>
+      <div class="modal-close">
+        <button class="btn btn-primary" id="closeModalBtn" style="width: 100%;">Đóng nè 🌸</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">
+    <span>✅ Đã lưu lời nhắn của vợ (trong tim tớ 😌)</span>
+  </div>
+
+  <script>
+    // ----------- Tiện ích nhỏ -----------
+    const $ = selector => document.querySelector(selector);
+    const $all = selector => document.querySelectorAll(selector);
+
+    // ----------- Hiệu ứng Hạt Rơi (Falling Particles) -----------
+    function createParticle() {
+      const container = $('#particles');
+      const particle = document.createElement('div');
+      particle.className = 'particle';
+      
+      // Mảng icon dễ thương rơi xuống
+      const shapes = ['🌸', '💖', '✨', '🎀', '💕'];
+      particle.innerText = shapes[Math.floor(Math.random() * shapes.length)];
+      
+      // Random kích thước, vị trí và thời gian rơi
+      const size = Math.random() * 15 + 10; 
+      particle.style.fontSize = `${size}px`;
+      particle.style.left = `${Math.random() * 100}vw`;
+      particle.style.animationDuration = `${Math.random() * 3 + 4}s`; // Rơi từ 4-7 giây
+
+      container.appendChild(particle);
+
+      // Xóa hạt sau khi rơi xong để không nặng máy
+      setTimeout(() => {
+        particle.remove();
+      }, 7000);
+    }
+    // Cứ mỗi 600ms tạo 1 hạt
+    setInterval(createParticle, 600);
+
+
+    // ----------- Đồng hồ + chào hỏi -----------
+    function updateClockAndGreeting() {
+      const clock = $("#clock");
+      const greeting = $("#greetingText");
+
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2, "0");
+      const mm = String(now.getMinutes()).padStart(2, "0");
+      const ss = String(now.getSeconds()).padStart(2, "0");
+      clock.textContent = `${hh}:${mm}:${ss}`;
+
+      let text = "Chúc vợ một ngày hồng rực rỡ!";
+      if (now.getHours() < 12) {
+        text = "Buổi sáng vui vẻ nha vợ, nhớ ăn sáng 💗";
+      } else if (now.getHours() < 18) {
+        text = "Chiều rồi, cố thêm xíu nữa là được nghỉ nè 😌";
+      } else {
+        text = "Tối rồi, vợ nhớ nghỉ ngơi, đừng thức khuya nha 🌙";
+      }
+      greeting.textContent = text;
+    }
+
+    // ----------- Navigation scroll -----------
+    function setupNavigation() {
+      const navButtons = $all(".nav-btn");
+      navButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = btn.getAttribute("data-scroll");
+          if (target) {
+            document.querySelector(target).scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+          navButtons.forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+        });
+      });
+    }
+
+    // ----------- Theme toggle -----------
+    function setupThemeToggle() {
+      const toggle = $("#themeToggle");
+      const moodBadge = $("#moodBadge");
+
+      function applyMode(isOn) {
+        if (isOn) {
+          document.body.classList.add("pink-mode");
+          toggle.classList.add("on");
+          moodBadge.textContent = "Mood: 💖 Hường phấn max level";
+        } else {
+          document.body.classList.remove("pink-mode");
+          toggle.classList.remove("on");
+          moodBadge.textContent = "Mood: 💗 Dễ thương";
+        }
+      }
+
+      const stored = localStorage.getItem("pink-mode-on");
+      if (stored === "true") applyMode(true);
+
+      toggle.addEventListener("click", () => {
+        const isOn = !toggle.classList.contains("on");
+        applyMode(isOn);
+        localStorage.setItem("pink-mode-on", String(isOn));
+      });
+    }
+
+    // ----------- To-do list -----------
+    const todos = [];
+
+    function renderTodos(filter = "all") {
+      const listEl = $("#todoList");
+      listEl.innerHTML = "";
+
+      let filtered = todos;
+      if (filter === "pending") filtered = todos.filter((t) => !t.done);
+      else if (filter === "done") filtered = todos.filter((t) => t.done);
+
+      filtered.forEach((todo) => {
+        const li = document.createElement("li");
+        li.className = "todo-item" + (todo.done ? " done" : "");
+        li.dataset.id = todo.id;
+
+        li.innerHTML = `
+          <div class="todo-left">
+            <input type="checkbox" ${todo.done ? "checked" : ""} />
+            <span class="todo-text">${todo.text}</span>
+          </div>
+          <div class="todo-actions">
+            <span class="tag">${todo.done ? "Xong gòi" : "Chưa làm"}</span>
+            <button class="icon-btn" data-action="delete" title="Xoá">🗑</button>
+          </div>
+        `;
+
+        li.querySelector('input[type="checkbox"]').addEventListener("change", () => toggleTodo(todo.id));
+        li.querySelector('[data-action="delete"]').addEventListener("click", () => deleteTodo(todo.id));
+
+        listEl.appendChild(li);
+      });
+    }
+
+    function addTodo() {
+      const input = $("#todoInput");
+      const text = input.value.trim();
+      if (!text) return;
+
+      todos.unshift({ id: Date.now(), text, done: false });
+      input.value = "";
+      renderTodos(getCurrentFilter());
+    }
+
+    function toggleTodo(id) {
+      const item = todos.find((t) => t.id === id);
+      if (!item) return;
+      item.done = !item.done;
+      renderTodos(getCurrentFilter());
+    }
+
+    function deleteTodo(id) {
+      const index = todos.findIndex((t) => t.id === id);
+      if (index !== -1) {
+        todos.splice(index, 1);
+        renderTodos(getCurrentFilter());
+      }
+    }
+
+    function getCurrentFilter() {
+      const activeChip = document.querySelector(".chip.active");
+      return activeChip ? activeChip.getAttribute("data-filter") : "all";
+    }
+
+    function setupTodo() {
+      const input = $("#todoInput");
+      $("#addTodoBtn").addEventListener("click", addTodo);
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") addTodo();
+      });
+
+      const chips = $all(".chip");
+      chips.forEach((chip) => {
+        chip.addEventListener("click", () => {
+          chips.forEach((c) => c.classList.remove("active"));
+          chip.classList.add("active");
+          renderTodos(chip.getAttribute("data-filter") || "all");
+        });
+      });
+
+      todos.push(
+        { id: Date.now() + 1, text: "Uống nước cho đủ nè", done: false },
+        { id: Date.now() + 2, text: "Duỗi người 2 phút thuii", done: false },
+        { id: Date.now() + 3, text: "Nhớ tự khen mình 1 câu", done: true }
+      );
+      renderTodos();
+    }
+
+    // ----------- Counter -----------
+    function setupCounter() {
+      const valueEl = $("#counterValue");
+      let value = 0;
+
+      function updateDisplay() {
+        valueEl.style.transform = "scale(1.2)";
+        setTimeout(() => valueEl.style.transform = "scale(1)", 150);
+        valueEl.textContent = value;
+      }
+
+      document.querySelectorAll("[data-counter]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const action = btn.getAttribute("data-counter");
+          if (action === "inc") value++;
+          else if (action === "dec") value--;
+          else if (action === "reset") value = 0;
+          updateDisplay();
+        });
+      });
+    }
+
+    // ----------- Accordion -----------
+    function setupAccordion() {
+      const headers = $all(".accordion-header");
+      headers.forEach((header) => {
+        header.addEventListener("click", () => {
+          const isActive = header.classList.contains("active");
+          headers.forEach((h) => {
+            h.classList.remove("active");
+            const c = h.nextElementSibling;
+            if (c) c.classList.remove("open");
+          });
+
+          if (!isActive) {
+            header.classList.add("active");
+            const content = header.nextElementSibling;
+            if (content) content.classList.add("open");
+          }
+        });
+      });
+    }
+
+    // ----------- Form + toast -----------
+    function showToast(message) {
+      const toast = $("#toast");
+      toast.innerHTML = `<span>✅ ${message}</span>`;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 3000);
+    }
+
+    function validateForm() {
+      const name = $("#nameInput").value.trim();
+      const message = $("#messageInput").value.trim();
+      let valid = true;
+
+      if (!name) {
+        $("#nameError").textContent = "Vợ cho tớ biết vợ tên gì đã nè.";
+        valid = false;
+      } else {
+        $("#nameError").textContent = "";
+      }
+
+      if (!message) {
+        $("#messageError").textContent = "Vợ viết vài chữ thôi cũng được, đừng để trống nha.";
+        valid = false;
+      } else if (message.length < 5) {
+        $("#messageError").textContent = "Viết dài thêm xíu cho tớ đọc cho đã 🥹";
+        valid = false;
+      } else {
+        $("#messageError").textContent = "";
+      }
+
+      return valid;
+    }
+
+    function setupForm() {
+      $("#sendMessageBtn").addEventListener("click", () => {
+        if (!validateForm()) return;
+        showToast("Đã lưu lời nhắn của vợ (trong tim Khôi 😌)");
+        $("#messageInput").value = "";
+      });
+    }
+
+    // ----------- Modal lời khen -----------
+    const compliments = [
+      "Hôm nay vợ đã cố gắng rất nhiều rồi, tự ôm mình một cái nha 💗",
+      "Dù vợ có thấy mình bình thường thì với tớ vợ vẫn rất đặc biệt đó 💖",
+      "Vợ xứng đáng được nghỉ ngơi, được yêu thương và được trân trọng thật nhiều 🥹",
+      "Nhìn cái cách vợ cố gắng mỗi ngày là biết vợ siêu xịn rồi, đừng tự nghi ngờ mình nữa nha 😌",
+      "Nếu có bảng xếp hạng dễ thương thì vợ chắc chắn trong top đầu rồi 💝",
+    ];
+
+    function openModal() {
+      const backdrop = $("#modalBackdrop");
+      const textEl = $("#complimentText");
+      const random = compliments[Math.floor(Math.random() * compliments.length)];
+      textEl.textContent = random;
+      backdrop.style.display = "flex";
+    }
+
+    function closeModal() {
+      $("#modalBackdrop").style.display = "none";
+    }
+
+    function setupModal() {
+      $("#complimentBtn").addEventListener("click", openModal);
+      $("#closeModalBtn").addEventListener("click", closeModal);
+      $("#modalBackdrop").addEventListener("click", (e) => {
+        if (e.target.id === "modalBackdrop") closeModal();
+      });
+    }
+
+    // ----------- Khởi động trang -----------
+    function initApp() {
+      setupNavigation();
+      setupThemeToggle();
+      setupTodo();
+      setupCounter();
+      setupAccordion();
+      setupForm();
+      setupModal();
+      updateClockAndGreeting();
+      setInterval(updateClockAndGreeting, 1000);
+    }
+
+    document.addEventListener("DOMContentLoaded", initApp);
+  </script>
+</body>
+</html>
