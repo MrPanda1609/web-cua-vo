@@ -1270,11 +1270,11 @@
   }
 
   function setupSlides(){
-    // Intro slide tap
     const slideIntro=document.getElementById('slideIntro');
     const introText=document.getElementById('introText');
     const introPanda=document.getElementById('introPanda');
     const introHint=document.getElementById('introHint');
+    if(!slideIntro){setTimeout(setupSlides,100);return;}
 
     slideIntro.addEventListener('click',()=>{
       if(introState===0){
@@ -1515,7 +1515,8 @@
   document.addEventListener('click',goFS,{once:true});
   document.addEventListener('touchstart',goFS,{once:true});
 
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init);
+  else if(document.readyState==='interactive') document.addEventListener('DOMContentLoaded',init);
   else init();
 })();
 </script>
