@@ -929,9 +929,9 @@
     /* ===================== MEMORY DIARY ===================== */
     .memory-launcher {
       position: fixed;
-      right: 22px;
-      bottom: max(22px, env(safe-area-inset-bottom, 22px));
-      z-index: 120;
+      left: calc(50% + 88px);
+      bottom: calc(10% + 58px);
+      z-index: 130;
       display: none;
       align-items: center;
       gap: 10px;
@@ -1085,6 +1085,9 @@
       .memory-page { min-height: 50vh; }
       .memory-media-wrap { height: 40vh; }
       .memory-nav { position: sticky; bottom: 12px; }
+      .memory-launcher { left: 50%; bottom: calc(10% + 8px); transform: translateX(54px) scale(0.92); padding: 10px 13px 10px 11px; }
+      .memory-launcher:active { transform: translateX(54px) scale(0.88); }
+      .memory-launcher span:last-child { display: none; }
     }
 
     .admin-panel {
