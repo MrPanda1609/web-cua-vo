@@ -948,7 +948,7 @@
       backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
       animation: diaryGlow 2.6s ease-in-out infinite, diaryFloat 3.8s ease-in-out infinite;
     }
-    #mainContent.visible .memory-launcher { display: flex; }
+    .memory-launcher { display: flex; }
     .memory-launcher:active { transform: scale(0.95); }
     .diary-icon {
       position: relative;
@@ -983,7 +983,7 @@
 
     .memory-overlay {
       position: fixed; inset: 0;
-      z-index: 400;
+      z-index: 500;
       display: none;
       align-items: center;
       justify-content: center;
@@ -1374,11 +1374,11 @@
       <p style="margin-top:40px;font-size:11px;color:rgba(255,255,255,0.2)">ấn esc hoặc f11 để thoát nhá</p>
     </div>
   </div>
-  <button class="memory-launcher" id="memoryLauncher" type="button" aria-label="Mở Kỉ Niệm">
-    <span class="diary-icon" aria-hidden="true"></span>
-    <span>Kỉ Niệm</span>
-  </button>
 </div>
+<button class="memory-launcher" id="memoryLauncher" type="button" aria-label="Mở Kỉ Niệm">
+  <span class="diary-icon" aria-hidden="true"></span>
+  <span>Kỉ Niệm</span>
+</button>
 
 <div class="memory-overlay" id="memoryOverlay" aria-hidden="true">
   <div class="memory-book" role="dialog" aria-modal="true" aria-label="Kỉ Niệm Hà Nội">
@@ -1938,11 +1938,19 @@
       memoryCount.textContent = '0 / 0';
       return;
     }
+    if(memoryIndex >= memories.length) {
+      memoryTitle.textContent = 'Kỉ Niệm';
+      memoryMedia.innerHTML = '<div style="height:100%;display:flex;align-items:center;justify-content:center;font-family:Patrick Hand,cursive;font-size:38px;color:#2c1810;text-align:center;padding:24px">Hẹn em ở chương sau</div>';
+      memoryStory.textContent = 'Sẽ cập nhật vào lần tiếp theo gặp nhau';
+      memoryMeta.textContent = 'Trang cuối';
+      memoryCount.textContent = (memories.length + 1) + ' / ' + (memories.length + 1);
+      return;
+    }
     const item = memories[memoryIndex];
     memoryTitle.textContent = item.title || 'Kỉ Niệm';
     memoryStory.textContent = item.story || 'Chưa viết câu chuyện cho kỉ niệm này.';
     memoryMeta.textContent = item.type === 'video' ? 'Video kỉ niệm' : 'Ảnh kỉ niệm';
-    memoryCount.textContent = (memoryIndex + 1) + ' / ' + memories.length;
+    memoryCount.textContent = (memoryIndex + 1) + ' / ' + (memories.length + 1);
     memoryMedia.innerHTML = item.type === 'video'
       ? '<video src="'+item.src+'" controls playsinline preload="metadata"></video>'
       : '<img src="'+item.src+'" alt="'+(item.title || 'Kỉ niệm')+'">';
@@ -1952,8 +1960,8 @@
     memoryLauncher.addEventListener('click', openMemories);
     memoryClose.addEventListener('click', closeMemories);
     memoryOverlay.addEventListener('click', e => { if(e.target === memoryOverlay) closeMemories(); });
-    memoryPrev.addEventListener('click', () => { if(!memories.length)return; memoryIndex = (memoryIndex - 1 + memories.length) % memories.length; renderMemory(); });
-    memoryNext.addEventListener('click', () => { if(!memories.length)return; memoryIndex = (memoryIndex + 1) % memories.length; renderMemory(); });
+    memoryPrev.addEventListener('click', () => { if(!memories.length)return; memoryIndex = memoryIndex <= 0 ? memories.length : memoryIndex - 1; renderMemory(); });
+    memoryNext.addEventListener('click', () => { if(!memories.length)return; memoryIndex = memoryIndex >= memories.length ? 0 : memoryIndex + 1; renderMemory(); });
     document.addEventListener('keydown', e => {
       if(!memoryOverlay.classList.contains('show'))return;
       if(e.key === 'Escape') closeMemories();
