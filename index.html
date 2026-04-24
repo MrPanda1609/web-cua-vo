@@ -73,6 +73,18 @@
       100% { opacity: 0; transform: rotate(-35deg) translateX(350px); }
     }
 
+    .sun {
+      position: absolute; top: 8%; right: 13%;
+      width: 68px; height: 68px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #fff8c7 0%, #ffd86b 55%, #ffb347 100%);
+      box-shadow: 0 0 35px rgba(255,205,85,0.45), 0 0 85px rgba(255,205,85,0.22);
+      opacity: 0;
+      transform: translateY(8px) scale(0.9);
+      transition: opacity 0.8s ease, transform 0.8s var(--spring);
+    }
+    body.day-theme .sun { opacity: 1; transform: translateY(0) scale(1); }
+
     .moon {
       position: absolute; top: 7%; right: 14%;
       width: 55px; height: 55px;
@@ -144,7 +156,113 @@
       position: absolute; bottom: 10%; left: 50%;
       transform: translateX(-50%); z-index: 3;
       animation: pandaFloat 4s ease-in-out infinite;
+      transition: bottom 0.8s var(--spring), filter 0.8s ease;
     }
+    .panda-countdown {
+      position: absolute;
+      left: 50%; bottom: calc(10% + 194px);
+      z-index: 4;
+      width: min(340px, 88vw);
+      padding: 12px 14px 13px;
+      transform: translateX(-50%);
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.22), rgba(255,255,255,0.1));
+      backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+      box-shadow: 0 18px 40px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.24);
+      text-align: center;
+      color: white;
+      text-shadow: 0 1px 12px rgba(0,0,0,0.25);
+      animation: countdownFloat 4s ease-in-out infinite;
+      transition: background 0.8s ease, border-color 0.8s ease, color 0.8s ease, text-shadow 0.8s ease;
+    }
+    .panda-countdown::after {
+      content: '';
+      position: absolute;
+      left: 50%; bottom: -8px;
+      width: 16px; height: 16px;
+      transform: translateX(-50%) rotate(45deg);
+      background: inherit;
+      border-right: 1px solid rgba(255,255,255,0.18);
+      border-bottom: 1px solid rgba(255,255,255,0.18);
+    }
+    .countdown-title {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.7px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.74);
+      margin-bottom: 8px;
+    }
+    .countdown-units { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+    .countdown-unit {
+      padding: 7px 5px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+    .countdown-num {
+      display: block;
+      font-size: clamp(18px, 5vw, 26px);
+      font-weight: 800;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+    .countdown-label {
+      display: block;
+      margin-top: 3px;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      opacity: 0.62;
+    }
+    @keyframes countdownFloat {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-6px); }
+    }
+    body.day-theme #wallpaper {
+      background: linear-gradient(180deg, #78c8ff 0%, #b7e6ff 38%, #fff1c7 72%, #bce7a5 100%);
+    }
+    body.day-theme .star, body.day-theme .shooting-star, body.day-theme .moon { display: none; }
+    body.night-theme .sun { display: none; }
+    body.day-theme .hill-1 { background: #7abf62; }
+    body.day-theme .hill-2 { background: #8bd16c; }
+    body.day-theme .hill-3 { background: #9cda7d; }
+    body.day-theme .grass { background: linear-gradient(180deg, #70bd55, #3f8e36); }
+    body.day-theme .bamboo { background: linear-gradient(90deg, #2f7b34, #55ac45, #2f7b34); }
+    body.day-theme .bamboo::before, body.day-theme .bamboo::after { background: #246b2d; }
+    body.day-theme .bamboo-leaf { background: #55ac45; }
+    body.day-theme .firefly { display: none; }
+    body.day-theme .wallpaper-overlay {
+      background: linear-gradient(180deg, rgba(255,255,255,0.1), rgba(255,255,255,0), rgba(39,114,50,0.12));
+    }
+    body.day-theme .panda-wrapper { filter: drop-shadow(0 18px 22px rgba(50,90,40,0.22)); }
+    body.night-theme .panda-wrapper { filter: drop-shadow(0 18px 20px rgba(0,0,0,0.28)); }
+    .panda-eye-sleep, .panda-mouth-sleep { opacity: 0; }
+    body.night-theme .panda-eye-open, body.night-theme .panda-mouth-awake { opacity: 0; }
+    body.night-theme .panda-eye-sleep, body.night-theme .panda-mouth-sleep { opacity: 1; }
+    body.day-theme .panda-eye-sleep, body.day-theme .panda-mouth-sleep { opacity: 0; }
+    .panda-eye-open, .panda-eye-sleep, .panda-mouth-awake, .panda-mouth-sleep { transition: opacity 0.5s ease; }
+    .sleep-mark { opacity: 0; transform-origin: center; }
+    body.night-theme .sleep-mark { animation: sleepDrift 2.8s ease-in-out infinite; }
+    body.night-theme .sleep-mark.z2 { animation-delay: 0.5s; }
+    body.night-theme .sleep-mark.z3 { animation-delay: 1s; }
+    @keyframes sleepDrift {
+      0% { opacity: 0; transform: translate(0, 0) scale(0.8); }
+      30% { opacity: 0.75; }
+      100% { opacity: 0; transform: translate(16px, -22px) scale(1.12); }
+    }
+    body.day-theme .panda-countdown {
+      color: #1f3b25;
+      text-shadow: none;
+      border-color: rgba(46,125,50,0.16);
+      background: linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.48));
+      box-shadow: 0 20px 45px rgba(83,139,67,0.2), inset 0 1px 0 rgba(255,255,255,0.8);
+    }
+    body.day-theme .countdown-title { color: rgba(31,59,37,0.62); }
+    body.day-theme .countdown-unit { background: rgba(76,145,67,0.1); border-color: rgba(76,145,67,0.1); }
+
     @keyframes pandaFloat {
       0%, 100% { transform: translateX(-50%) translateY(0); }
       50% { transform: translateX(-50%) translateY(-8px); }
@@ -523,21 +641,6 @@
       background: var(--firefly-green); border-radius: 2px; opacity: 0.3;
     }
 
-    /* Burst particles */
-    .burst-particle { position: fixed; pointer-events: none; z-index: 300; border-radius: 50%; }
-
-    /* Ambient dots */
-    .ambient-dot {
-      position: fixed; pointer-events: none; z-index: 85;
-      border-radius: 50%; opacity: 0;
-      animation: ambientFloat var(--d, 5s) ease-out forwards;
-    }
-    @keyframes ambientFloat {
-      0% { opacity: 0; transform: translateY(0) scale(0); }
-      15% { opacity: 0.6; transform: translateY(-8vh) scale(1); }
-      100% { opacity: 0; transform: translateY(-90vh) scale(0.3); }
-    }
-
     @keyframes pulseText {
       0%, 100% { opacity: 0.25; }
       50% { opacity: 0.7; }
@@ -556,34 +659,54 @@
       transform: scale(0.3) rotateX(20deg);
       opacity: 0;
       transition: transform 0.9s var(--bounce), opacity 0.6s ease;
-      box-shadow: 0 18px 50px rgba(0,0,0,0.6), 0 5px 15px rgba(0,0,0,0.4);
-      border-radius: 4px;
+      box-shadow: 0 28px 70px rgba(0,0,0,0.62), 0 8px 20px rgba(0,0,0,0.42);
+      border-radius: 8px;
+      transform-style: preserve-3d;
+      position: relative;
+      filter: drop-shadow(0 22px 28px rgba(0,0,0,0.28));
+    }
+    .book::before {
+      content: '';
+      position: absolute; inset: -10px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(120,72,33,0.5), rgba(55,32,15,0.18));
+      transform: translateZ(-1px);
+      z-index: -1;
     }
     .book.open { transform: scale(1) rotateX(0); opacity: 1; }
 
     .book-spine {
-      width: 10px; flex-shrink: 0;
-      background: linear-gradient(90deg, #4a2f15, #6b4420, #4a2f15);
-      box-shadow: 2px 0 6px rgba(0,0,0,0.25), -2px 0 6px rgba(0,0,0,0.25);
+      width: 14px; flex-shrink: 0;
+      background: linear-gradient(90deg, #321b0d, #8a5526 28%, #5b3418 54%, #2b160b);
+      box-shadow: inset 3px 0 7px rgba(255,255,255,0.13), inset -4px 0 9px rgba(0,0,0,0.32), 2px 0 8px rgba(0,0,0,0.25), -2px 0 8px rgba(0,0,0,0.25);
     }
 
     .book-page {
-      flex: 1; padding: clamp(16px,4vw,24px);
+      flex: 1; padding: clamp(18px,4vw,28px);
       position: relative; overflow: hidden;
       display: flex; flex-direction: column;
       background-color: #f5f0e6;
       background-image:
+        radial-gradient(circle at 18% 12%, rgba(255,255,255,0.45), transparent 18%),
+        linear-gradient(90deg, rgba(90,55,25,0.08), transparent 18%, transparent 82%, rgba(90,55,25,0.06)),
         repeating-linear-gradient(transparent, transparent 27px, rgba(170,160,140,0.18) 27px, rgba(170,160,140,0.18) 28px);
     }
+    .book-page::after {
+      content: '';
+      position: absolute; inset: 0;
+      pointer-events: none;
+      background: radial-gradient(ellipse at center, transparent 58%, rgba(96,63,30,0.09) 100%);
+      mix-blend-mode: multiply;
+    }
     .book-page-left {
-      border-radius: 3px 0 0 3px;
+      border-radius: 6px 0 0 6px;
       background-color: #f2eddf;
-      box-shadow: inset -4px 0 12px rgba(0,0,0,0.06);
+      box-shadow: inset -18px 0 28px rgba(76,45,20,0.12), inset 0 0 32px rgba(255,255,255,0.24);
     }
     .book-page-right {
-      border-radius: 0 3px 3px 0;
+      border-radius: 0 6px 6px 0;
       background-color: #f5f0e6;
-      box-shadow: inset 4px 0 12px rgba(0,0,0,0.04);
+      box-shadow: inset 18px 0 30px rgba(76,45,20,0.1), inset 0 0 32px rgba(255,255,255,0.22);
       transform-style: preserve-3d;
     }
 
@@ -803,6 +926,220 @@
     .book-close-btn:hover { background: rgba(44,24,16,0.12); color: rgba(44,24,16,0.7); }
     .book-close-btn:active { transform: scale(0.95); }
 
+    /* ===================== MEMORY DIARY ===================== */
+    .memory-launcher {
+      position: fixed;
+      right: 22px;
+      bottom: max(22px, env(safe-area-inset-bottom, 22px));
+      z-index: 120;
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px 12px 13px;
+      border: 1px solid rgba(168,230,207,0.24);
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(16,36,18,0.76), rgba(45,90,39,0.58));
+      color: rgba(255,255,255,0.92);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 16px 38px rgba(0,0,0,0.34), 0 0 26px rgba(168,230,207,0.18), inset 0 1px 0 rgba(255,255,255,0.18);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      animation: diaryGlow 2.6s ease-in-out infinite, diaryFloat 3.8s ease-in-out infinite;
+    }
+    #mainContent.visible .memory-launcher { display: flex; }
+    .memory-launcher:active { transform: scale(0.95); }
+    .diary-icon {
+      position: relative;
+      width: 28px; height: 34px;
+      border-radius: 4px 8px 8px 4px;
+      background: linear-gradient(135deg, #5d3518, #9b6630 55%, #6b3f1d);
+      box-shadow: inset 4px 0 0 rgba(42,22,10,0.38), inset 0 0 0 1px rgba(255,230,180,0.16);
+    }
+    .diary-icon::before {
+      content: '';
+      position: absolute; left: 7px; top: 7px;
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: rgba(255,235,180,0.28);
+      box-shadow: 0 0 12px rgba(255,235,180,0.38);
+    }
+    .diary-icon::after {
+      content: '';
+      position: absolute; right: 3px; top: 4px; bottom: 4px;
+      width: 2px;
+      border-radius: 2px;
+      background: rgba(255,246,214,0.28);
+    }
+    @keyframes diaryGlow {
+      0%, 100% { box-shadow: 0 16px 38px rgba(0,0,0,0.34), 0 0 22px rgba(168,230,207,0.16), inset 0 1px 0 rgba(255,255,255,0.18); }
+      50% { box-shadow: 0 18px 44px rgba(0,0,0,0.38), 0 0 38px rgba(168,230,207,0.32), inset 0 1px 0 rgba(255,255,255,0.24); }
+    }
+    @keyframes diaryFloat {
+      0%, 100% { translate: 0 0; }
+      50% { translate: 0 -7px; }
+    }
+
+    .memory-overlay {
+      position: fixed; inset: 0;
+      z-index: 400;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: radial-gradient(ellipse at center, rgba(15,31,15,0.72), rgba(0,0,0,0.86));
+      backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+    }
+    .memory-overlay.show { display: flex; }
+    .memory-book {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(280px, 0.95fr);
+      gap: 0;
+      width: min(1040px, 96vw);
+      height: min(680px, 88vh);
+      border-radius: 10px;
+      overflow: hidden;
+      transform: scale(0.86) rotateX(8deg);
+      opacity: 0;
+      transition: transform 0.55s var(--bounce), opacity 0.35s ease;
+      box-shadow: 0 36px 90px rgba(0,0,0,0.58), 0 0 0 1px rgba(255,255,255,0.08);
+    }
+    .memory-overlay.show .memory-book { transform: scale(1) rotateX(0); opacity: 1; }
+    .memory-page {
+      position: relative;
+      padding: clamp(16px, 3vw, 28px);
+      background-color: #f5f0e6;
+      background-image: linear-gradient(90deg, rgba(86,51,20,0.08), transparent 18%, transparent 84%, rgba(86,51,20,0.06)), repeating-linear-gradient(transparent, transparent 28px, rgba(160,145,115,0.16) 28px, rgba(160,145,115,0.16) 29px);
+      overflow: hidden;
+    }
+    .memory-page-left { box-shadow: inset -20px 0 32px rgba(75,45,20,0.15); }
+    .memory-page-right { box-shadow: inset 20px 0 32px rgba(75,45,20,0.12); }
+    .memory-page-title {
+      font-family: 'Patrick Hand', cursive;
+      font-size: clamp(28px, 5vw, 42px);
+      color: #2c1810;
+      margin-bottom: 14px;
+    }
+    .memory-media-wrap {
+      height: calc(100% - 72px);
+      border: 9px solid white;
+      border-radius: 6px;
+      background: #fff;
+      box-shadow: 0 14px 28px rgba(62,36,14,0.18);
+      transform: rotate(-1.2deg);
+      overflow: hidden;
+    }
+    .memory-media-wrap img, .memory-media-wrap video {
+      width: 100%; height: 100%;
+      display: block;
+      object-fit: cover;
+      background: #111;
+    }
+    .memory-story {
+      height: calc(100% - 140px);
+      overflow: auto;
+      padding-right: 6px;
+      font-family: 'Patrick Hand', cursive;
+      font-size: clamp(21px, 4vw, 30px);
+      line-height: 1.45;
+      color: #2c1810;
+      white-space: pre-wrap;
+    }
+    .memory-meta {
+      margin-top: 18px;
+      color: rgba(44,24,16,0.42);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .memory-nav {
+      position: absolute;
+      left: 50%; bottom: 18px;
+      transform: translateX(-50%);
+      display: flex; align-items: center; gap: 12px;
+      z-index: 3;
+    }
+    .memory-nav button, .memory-close {
+      border: 1px solid rgba(44,24,16,0.12);
+      border-radius: 999px;
+      background: rgba(255,255,255,0.5);
+      color: rgba(44,24,16,0.72);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 800;
+      padding: 9px 15px;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(60,35,15,0.1);
+    }
+    .memory-close {
+      position: absolute;
+      top: 14px; right: 14px;
+      z-index: 4;
+    }
+    .memory-count { color: rgba(44,24,16,0.5); font-size: 12px; font-weight: 800; }
+    @media (max-width: 760px) {
+      .memory-book { grid-template-columns: 1fr; height: 90vh; overflow-y: auto; }
+      .memory-page { min-height: 50vh; }
+      .memory-media-wrap { height: 40vh; }
+      .memory-nav { position: sticky; bottom: 12px; }
+    }
+
+    .admin-panel {
+      position: fixed; inset: 0;
+      z-index: 500;
+      display: none;
+      background: #0b150b;
+      color: white;
+      overflow: auto;
+      padding: 24px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .admin-panel.show { display: block; }
+    .admin-shell { max-width: 920px; margin: 0 auto; }
+    .admin-shell h1 { font-size: 28px; margin-bottom: 8px; }
+    .admin-help { color: rgba(255,255,255,0.62); line-height: 1.6; margin-bottom: 18px; }
+    .admin-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+    .admin-actions button, .admin-actions a {
+      border: 1px solid rgba(168,230,207,0.2);
+      border-radius: 999px;
+      background: rgba(58,122,48,0.2);
+      color: white;
+      padding: 10px 16px;
+      font: inherit;
+      font-weight: 800;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .admin-item {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 14px;
+      padding: 14px;
+      margin-bottom: 12px;
+      border: 1px solid rgba(168,230,207,0.12);
+      border-radius: 18px;
+      background: rgba(255,255,255,0.04);
+    }
+    .admin-thumb { width: 120px; height: 120px; border-radius: 12px; object-fit: cover; background: #111; }
+    .admin-fields { display: grid; gap: 8px; }
+    .admin-fields input, .admin-fields textarea {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      background: rgba(0,0,0,0.22);
+      color: white;
+      padding: 10px 12px;
+      font: inherit;
+    }
+    .admin-fields textarea { min-height: 110px; resize: vertical; }
+    @media (max-width: 640px) {
+      .admin-item { grid-template-columns: 1fr; }
+      .admin-thumb { width: 100%; height: 220px; }
+    }
+
     @media (max-width: 420px) {
       .book { flex-direction: column; min-height: auto; }
       .book-spine { width: 100%; height: 4px; }
@@ -816,12 +1153,22 @@
 <!-- ==================== WALLPAPER ==================== -->
 <div id="wallpaper">
   <div class="moon"></div>
+  <div class="sun"></div>
   <div class="ground">
     <div class="hill hill-1"></div><div class="hill hill-2"></div><div class="hill hill-3"></div>
     <div class="grass"></div>
   </div>
   <div class="bamboo bamboo-1"></div><div class="bamboo bamboo-2"></div>
   <div class="bamboo bamboo-3"></div><div class="bamboo bamboo-4"></div>
+  <div class="panda-countdown" aria-live="polite">
+    <div class="countdown-title">Lần tiếp theo đến gặp em</div>
+    <div class="countdown-units" id="pandaCountdown">
+      <div class="countdown-unit"><span class="countdown-num">--</span><span class="countdown-label">ngày</span></div>
+      <div class="countdown-unit"><span class="countdown-num">--</span><span class="countdown-label">giờ</span></div>
+      <div class="countdown-unit"><span class="countdown-num">--</span><span class="countdown-label">phút</span></div>
+      <div class="countdown-unit"><span class="countdown-num">--</span><span class="countdown-label">giây</span></div>
+    </div>
+  </div>
   <div class="panda-wrapper">
     <svg viewBox="0 0 200 240" width="160" height="192">
       <ellipse cx="100" cy="232" rx="58" ry="7" fill="rgba(0,0,0,0.2)"/>
@@ -838,16 +1185,26 @@
       <circle cx="150" cy="40" r="25" fill="#2a2a2a"/><circle cx="150" cy="40" r="16" fill="#3d3d3d"/>
       <ellipse cx="72" cy="88" rx="23" ry="19" fill="#2a2a2a" transform="rotate(-8 72 88)"/>
       <ellipse cx="128" cy="88" rx="23" ry="19" fill="#2a2a2a" transform="rotate(8 128 88)"/>
-      <g class="panda-blink">
+      <g class="panda-eye-open panda-blink">
         <ellipse cx="72" cy="86" rx="10" ry="12" fill="white"/>
         <ellipse cx="128" cy="86" rx="10" ry="12" fill="white"/>
         <circle cx="75" cy="88" r="6.5" fill="#111"/><circle cx="131" cy="88" r="6.5" fill="#111"/>
         <circle cx="77" cy="85" r="2.8" fill="white" opacity="0.95"/>
         <circle cx="133" cy="85" r="2.8" fill="white" opacity="0.95"/>
       </g>
+      <g class="panda-eye-sleep">
+        <path d="M62 88 Q72 96 83 88" fill="none" stroke="#2a2a2a" stroke-width="4" stroke-linecap="round"/>
+        <path d="M117 88 Q128 96 139 88" fill="none" stroke="#2a2a2a" stroke-width="4" stroke-linecap="round"/>
+      </g>
+      <g class="sleep-marks" font-family="Plus Jakarta Sans, sans-serif" font-weight="800" fill="rgba(255,255,255,0.78)">
+        <text class="sleep-mark z1" x="146" y="36" font-size="12">Z</text>
+        <text class="sleep-mark z2" x="158" y="22" font-size="15">Z</text>
+        <text class="sleep-mark z3" x="174" y="8" font-size="18">Z</text>
+      </g>
       <ellipse cx="100" cy="106" rx="8" ry="6" fill="#2a2a2a"/>
       <ellipse cx="100" cy="104.5" rx="3.5" ry="2" fill="#555" opacity="0.4"/>
-      <path d="M92 112 Q100 120 108 112" fill="none" stroke="#2a2a2a" stroke-width="2.2" stroke-linecap="round"/>
+      <path class="panda-mouth-awake" d="M92 112 Q100 120 108 112" fill="none" stroke="#2a2a2a" stroke-width="2.2" stroke-linecap="round"/>
+      <path class="panda-mouth-sleep" d="M94 116 Q100 112 106 116" fill="none" stroke="#2a2a2a" stroke-width="2.2" stroke-linecap="round" opacity="0"/>
       <ellipse cx="55" cy="102" rx="13" ry="8" fill="#ff9eb5" opacity="0.35"/>
       <ellipse cx="145" cy="102" rx="13" ry="8" fill="#ff9eb5" opacity="0.35"/>
       <g transform="translate(100,172)">
@@ -1014,6 +1371,42 @@
       <p style="margin-top:40px;font-size:11px;color:rgba(255,255,255,0.2)">ấn esc hoặc f11 để thoát nhá</p>
     </div>
   </div>
+  <button class="memory-launcher" id="memoryLauncher" type="button" aria-label="Mở Kỉ Niệm">
+    <span class="diary-icon" aria-hidden="true"></span>
+    <span>Kỉ Niệm</span>
+  </button>
+</div>
+
+<div class="memory-overlay" id="memoryOverlay" aria-hidden="true">
+  <div class="memory-book" role="dialog" aria-modal="true" aria-label="Kỉ Niệm Hà Nội">
+    <button class="memory-close" id="memoryClose" type="button">đóng</button>
+    <div class="memory-page memory-page-left">
+      <div class="memory-page-title" id="memoryTitle">Kỉ Niệm</div>
+      <div class="memory-media-wrap" id="memoryMedia"></div>
+    </div>
+    <div class="memory-page memory-page-right">
+      <div class="memory-page-title">Chuyện của tụi mình</div>
+      <div class="memory-story" id="memoryStory">Đang mở nhật ký...</div>
+      <div class="memory-meta" id="memoryMeta"></div>
+    </div>
+    <div class="memory-nav">
+      <button id="memoryPrev" type="button">trước</button>
+      <span class="memory-count" id="memoryCount">-- / --</span>
+      <button id="memoryNext" type="button">tiếp</button>
+    </div>
+  </div>
+</div>
+
+<div class="admin-panel" id="adminPanel">
+  <div class="admin-shell">
+    <h1>Admin Kỉ Niệm</h1>
+    <p class="admin-help">Sửa tiêu đề và câu chuyện ở đây, sau đó bấm tải xuống <code>memories.json</code>. Thay file này trong dự án, commit/push lên GitHub, Vercel sẽ tự cập nhật.</p>
+    <div class="admin-actions">
+      <button id="adminDownload" type="button">Tải memories.json mới</button>
+      <a href="/">Về trang chính</a>
+    </div>
+    <div id="adminList"></div>
+  </div>
 </div>
 
 <script>
@@ -1035,15 +1428,33 @@
   const errorMsg = document.getElementById('errorMsg');
   const methodTabs = document.querySelectorAll('.method-tab');
   const forestBg = document.getElementById('forestBg');
+  const pandaCountdown = document.getElementById('pandaCountdown');
+  const memoryLauncher = document.getElementById('memoryLauncher');
+  const memoryOverlay = document.getElementById('memoryOverlay');
+  const memoryClose = document.getElementById('memoryClose');
+  const memoryMedia = document.getElementById('memoryMedia');
+  const memoryTitle = document.getElementById('memoryTitle');
+  const memoryStory = document.getElementById('memoryStory');
+  const memoryMeta = document.getElementById('memoryMeta');
+  const memoryCount = document.getElementById('memoryCount');
+  const memoryPrev = document.getElementById('memoryPrev');
+  const memoryNext = document.getElementById('memoryNext');
+  const adminPanel = document.getElementById('adminPanel');
+  const adminList = document.getElementById('adminList');
+  const adminDownload = document.getElementById('adminDownload');
 
   const CORRECT_PIN = '1609';
   const CORRECT_PATTERN = [1, 4, 7, 8];
   const LOVE_DATE = new Date(2025, 8, 30, 0, 0, 0);
+  const NEXT_MEET_DATE = new Date(2026, 4, 11, 0, 0, 0);
 
   let enteredPin = '';
   let wrongAttempts = 0;
   let isUnlocked = false;
   let counterInterval = null;
+  let memories = [];
+  let memoryIndex = 0;
+  let memoriesLoaded = false;
 
   /* ===================== CLOCK ===================== */
   const DAYS_VN = ['Chủ nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
@@ -1051,6 +1462,27 @@
     const now = new Date();
     lockTime.textContent = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
     lockDate.textContent = DAYS_VN[now.getDay()] + ', ngày ' + now.getDate() + ' tháng ' + (now.getMonth()+1);
+    updateTimeTheme(now);
+  }
+
+  function updateTimeTheme(now) {
+    const hour = now.getHours();
+    const isDay = hour >= 6 && hour < 20;
+    document.body.classList.toggle('day-theme', isDay);
+    document.body.classList.toggle('night-theme', !isDay);
+  }
+
+  function updatePandaCountdown() {
+    if(!pandaCountdown)return;
+    const diff = NEXT_MEET_DATE.getTime() - Date.now();
+    const safe = Math.max(0, diff);
+    const d = Math.floor(safe/86400000);
+    const h = Math.floor((safe%86400000)/3600000);
+    const m = Math.floor((safe%3600000)/60000);
+    const s = Math.floor((safe%60000)/1000);
+    const nums = pandaCountdown.querySelectorAll('.countdown-num');
+    [d, h, m, s].forEach((value, i) => { nums[i].textContent = i === 0 ? String(value) : String(value).padStart(2, '0'); });
+    if(diff <= 0) pandaCountdown.previousElementSibling.textContent = 'Đến ngày gặp em rồi';
   }
 
   /* ===================== SCENERY ===================== */
@@ -1223,7 +1655,6 @@
   /* ===================== UNLOCK ===================== */
   function unlockSuccess(){
     if(isUnlocked)return; isUnlocked=true;
-    createBurstParticles();
     passcodeScr.style.transition='opacity 0.6s cubic-bezier(0.32,0.72,0,1),transform 0.6s cubic-bezier(0.32,0.72,0,1)';
     passcodeScr.style.transform='scale(1.08)'; passcodeScr.style.opacity='0';
     wallpaper.classList.add('fade-out');
@@ -1232,27 +1663,8 @@
       mainContent.classList.add('visible');
       createForestFireflies();
       createForestLeaves();
-      spawnAmbientDots();
     },600);
   }
-  function createBurstParticles(){
-    const colors=['#3a7a30','#a8e6cf','#2d5a27','#ffffff','#ffeaa7','#dfe6e9'];
-    for(let i=0;i<22;i++){
-      const el=document.createElement('div'); el.className='burst-particle';
-      const sz=5+Math.random()*10;
-      el.style.cssText='left:50%;top:50%;width:'+sz+'px;height:'+sz+'px;background:'+colors[i%colors.length]+';border-radius:'+(Math.random()>0.5?'50%':'3px');
-      document.body.appendChild(el);
-      const angle=(Math.PI*2*i)/22,dist=70+Math.random()*220,dur=450+Math.random()*400;
-      el.animate([{transform:'translate(-50%,-50%) scale(0) rotate(0deg)',opacity:1},{transform:'translate(calc(-50% + '+Math.cos(angle)*dist+'px), calc(-50% + '+Math.sin(angle)*dist+'px)) scale(1) rotate('+Math.random()*360+'deg)',opacity:0}],{duration:dur,easing:'cubic-bezier(0.32,0.72,0,1)',fill:'forwards'});
-      setTimeout(()=>el.remove(),dur+50);
-    }
-  }
-  function spawnAmbientDots(){
-    const colors=['rgba(58,122,48,0.35)','rgba(168,230,207,0.25)','rgba(255,255,255,0.1)','rgba(200,230,180,0.2)'];
-    function spawn(){if(!isUnlocked)return;const el=document.createElement('div');el.className='ambient-dot';const sz=2+Math.random()*4;el.style.left=(5+Math.random()*90)+'%';el.style.bottom='0';el.style.width=sz+'px';el.style.height=sz+'px';el.style.background=colors[Math.floor(Math.random()*colors.length)];el.style.setProperty('--d',(4+Math.random()*3)+'s');document.body.appendChild(el);setTimeout(()=>el.remove(),8000);}
-    setInterval(spawn,1400);for(let i=0;i<3;i++)setTimeout(spawn,i*350);
-  }
-
   /* ===================== SLIDES ===================== */
   let currentSlide=1;
   let introState=0; // 0=Chào, 1=Đây là Ông Già Gấu Trúc
@@ -1487,6 +1899,108 @@
     if([179,182,185,227,230,320,323,326,329,332,335,338,350,362,365,368,371,374,377].includes(code))return'❄️';return'🌤️';
   }
 
+  /* ===================== MEMORY DIARY ===================== */
+  async function loadMemories() {
+    if(memoriesLoaded)return;
+    memoriesLoaded = true;
+    try {
+      const res = await fetch('memories.json', { cache: 'no-store' });
+      if(!res.ok)throw new Error('memories');
+      const data = await res.json();
+      memories = Array.isArray(data.items) ? data.items : [];
+    } catch(e) {
+      memories = [];
+    }
+  }
+
+  async function openMemories() {
+    await loadMemories();
+    memoryOverlay.classList.add('show');
+    memoryOverlay.setAttribute('aria-hidden','false');
+    renderMemory();
+  }
+
+  function closeMemories() {
+    memoryOverlay.classList.remove('show');
+    memoryOverlay.setAttribute('aria-hidden','true');
+    memoryMedia.querySelectorAll('video').forEach(v => v.pause());
+  }
+
+  function renderMemory() {
+    if(!memories.length) {
+      memoryTitle.textContent = 'Kỉ Niệm';
+      memoryMedia.innerHTML = '';
+      memoryStory.textContent = 'Chưa có dữ liệu trong memories.json.';
+      memoryMeta.textContent = '';
+      memoryCount.textContent = '0 / 0';
+      return;
+    }
+    const item = memories[memoryIndex];
+    memoryTitle.textContent = item.title || 'Kỉ Niệm';
+    memoryStory.textContent = item.story || 'Chưa viết câu chuyện cho kỉ niệm này.';
+    memoryMeta.textContent = item.type === 'video' ? 'Video kỉ niệm' : 'Ảnh kỉ niệm';
+    memoryCount.textContent = (memoryIndex + 1) + ' / ' + memories.length;
+    memoryMedia.innerHTML = item.type === 'video'
+      ? '<video src="'+item.src+'" controls playsinline preload="metadata"></video>'
+      : '<img src="'+item.src+'" alt="'+(item.title || 'Kỉ niệm')+'">';
+  }
+
+  function setupMemories() {
+    memoryLauncher.addEventListener('click', openMemories);
+    memoryClose.addEventListener('click', closeMemories);
+    memoryOverlay.addEventListener('click', e => { if(e.target === memoryOverlay) closeMemories(); });
+    memoryPrev.addEventListener('click', () => { if(!memories.length)return; memoryIndex = (memoryIndex - 1 + memories.length) % memories.length; renderMemory(); });
+    memoryNext.addEventListener('click', () => { if(!memories.length)return; memoryIndex = (memoryIndex + 1) % memories.length; renderMemory(); });
+    document.addEventListener('keydown', e => {
+      if(!memoryOverlay.classList.contains('show'))return;
+      if(e.key === 'Escape') closeMemories();
+      if(e.key === 'ArrowLeft') memoryPrev.click();
+      if(e.key === 'ArrowRight') memoryNext.click();
+    });
+  }
+
+  async function setupAdmin() {
+    if(location.pathname !== '/admin')return;
+    adminPanel.classList.add('show');
+    await loadMemories();
+    renderAdminList();
+  }
+
+  function renderAdminList() {
+    adminList.innerHTML = memories.map((item, index) => {
+      const preview = item.type === 'video'
+        ? '<video class="admin-thumb" src="'+item.src+'" muted playsinline></video>'
+        : '<img class="admin-thumb" src="'+item.src+'" alt="">';
+      return '<div class="admin-item" data-index="'+index+'">'+preview+'<div class="admin-fields"><input value="'+escapeAttr(item.title || '')+'" placeholder="Tiêu đề"><textarea placeholder="Câu chuyện">'+escapeHtml(item.story || '')+'</textarea><small>'+item.src+'</small></div></div>';
+    }).join('');
+    adminList.querySelectorAll('.admin-item').forEach(row => {
+      const index = Number(row.dataset.index);
+      const input = row.querySelector('input');
+      const textarea = row.querySelector('textarea');
+      input.addEventListener('input', () => { memories[index].title = input.value; });
+      textarea.addEventListener('input', () => { memories[index].story = textarea.value; });
+    });
+    adminDownload.addEventListener('click', downloadMemoriesJson, { once: true });
+  }
+
+  function downloadMemoriesJson() {
+    const blob = new Blob([JSON.stringify({ items: memories }, null, 2) + '\n'], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'memories.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    adminDownload.addEventListener('click', downloadMemoriesJson, { once: true });
+  }
+
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  }
+
+  function escapeAttr(str) {
+    return escapeHtml(str).replace(/"/g, '&quot;');
+  }
+
   /* ===================== HELPERS ===================== */
   function showError(msg){errorMsg.textContent=msg;errorMsg.style.opacity='1';setTimeout(()=>{errorMsg.style.opacity='0';},3000);}
   function clearError(){errorMsg.textContent='';errorMsg.style.opacity='0';}
@@ -1495,8 +2009,9 @@
   /* ===================== INIT ===================== */
   function init(){
     updateClock();setInterval(updateClock,1000);
+    updatePandaCountdown();setInterval(updatePandaCountdown,1000);
     createStars();createFireflies();createLeaves();
-    setupSwipe();setupTabs();setupPinPad();setupPattern();setupSlides();setupTear();setupPageFlip();
+    setupSwipe();setupTabs();setupPinPad();setupPattern();setupSlides();setupTear();setupPageFlip();setupMemories();setupAdmin();
     setInterval(()=>{if(!lockDismissed&&!isUnlocked)spawnShootingStar();},5000);
     setTimeout(spawnShootingStar,2000);
     window.addEventListener('resize',()=>{if(!patternSection.classList.contains('hidden'))resizePatternCanvas();});
