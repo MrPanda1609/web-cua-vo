@@ -253,6 +253,54 @@
       30% { opacity: 0.75; }
       100% { opacity: 0; transform: translate(16px, -22px) scale(1.12); }
     }
+    /* ===================== CELEBRATION ===================== */
+    .celebration-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    .celebration-overlay.show { opacity: 1; }
+    .confetti-piece {
+      position: absolute;
+      width: 8px; height: 8px;
+      border-radius: 2px;
+      animation: confettiFall var(--d, 2.5s) ease-in var(--del, 0s) forwards;
+      opacity: 0;
+    }
+    @keyframes confettiFall {
+      0%   { opacity: 1; transform: translateY(-20px) rotate(0deg) translateX(0); }
+      100% { opacity: 0; transform: translateY(100vh) rotate(720deg) translateX(var(--tx, 0px)); }
+    }
+    .celebration-msg {
+      position: relative; z-index: 2;
+      padding: 18px 28px;
+      border-radius: 24px;
+      background: linear-gradient(135deg, rgba(255,107,157,0.92), rgba(255,143,180,0.88));
+      color: white;
+      font-size: clamp(18px, 5vw, 26px);
+      font-weight: 800;
+      text-align: center;
+      line-height: 1.4;
+      box-shadow: 0 20px 50px rgba(255,107,157,0.4), 0 0 0 1px rgba(255,255,255,0.2);
+      animation: celebPop 0.5s var(--bounce) forwards;
+      transform: scale(0);
+    }
+    @keyframes celebPop {
+      to { transform: scale(1); }
+    }
+    .panda-dance {
+      position: relative; z-index: 2;
+      margin-bottom: 16px;
+      animation: pandaDance 0.4s ease-in-out infinite alternate;
+    }
+    @keyframes pandaDance {
+      0%   { transform: rotate(-12deg) scale(1.05); }
+      100% { transform: rotate(12deg) scale(1.1); }
+    }
+
     body.day-theme .panda-countdown {
       color: #1f3b25;
       text-shadow: none;
@@ -1503,7 +1551,8 @@
   const CORRECT_PIN = '1609';
   const CORRECT_PATTERN = [1, 4, 7, 8];
   const LOVE_DATE = new Date(2025, 8, 30, 0, 0, 0);
-  const NEXT_MEET_DATE = new Date(2026, 4, 11, 0, 0, 0);
+  let nextMeetDate = new Date(2026, 4, 11, 0, 0, 0);
+  let celebrationShown = false;
 
   let enteredPin = '';
   let wrongAttempts = 0;
@@ -1531,7 +1580,23 @@
 
   function updatePandaCountdown() {
     if(!pandaCountdown)return;
-    const diff = NEXT_MEET_DATE.getTime() - Date.now();
+    const diff = nextMeetDate.getTime() - Date.now();
+    if(diff <= 0 && !celebrationShown) {
+      celebrationShown = true;
+      pandaCountdown.previousElementSibling.textContent = 'Đến ngày gặp em rồi !';
+      const nums = pandaCountdown.querySelectorAll('.countdown-num');
+      nums.forEach(n => n.textContent = '00');
+      showCelebration();
+      // advance to next month same day
+      nextMeetDate = new Date(nextMeetDate.getTime());
+      nextMeetDate.setMonth(nextMeetDate.getMonth() + 1);
+      setTimeout(() => {
+        celebrationShown = false;
+        pandaCountdown.previousElementSibling.textContent = 'Lần tiếp theo đến gặp em';
+      }, 6000);
+      return;
+    }
+    if(celebrationShown) return;
     const safe = Math.max(0, diff);
     const d = Math.floor(safe/86400000);
     const h = Math.floor((safe%86400000)/3600000);
@@ -1539,7 +1604,38 @@
     const s = Math.floor((safe%60000)/1000);
     const nums = pandaCountdown.querySelectorAll('.countdown-num');
     [d, h, m, s].forEach((value, i) => { nums[i].textContent = i === 0 ? String(value) : String(value).padStart(2, '0'); });
-    if(diff <= 0) pandaCountdown.previousElementSibling.textContent = 'Đến ngày gặp em rồi';
+  }
+
+  function showCelebration() {
+    const overlay = document.createElement('div');
+    overlay.className = 'celebration-overlay';
+    const colors = ['#ff6b9d','#ffd86b','#a8e6cf','#ff8fb4','#7ec8e3','#ffb347'];
+    for(let i = 0; i < 60; i++) {
+      const c = document.createElement('div');
+      c.className = 'confetti-piece';
+      c.style.left = (Math.random()*100)+'%';
+      c.style.top = '-10px';
+      c.style.background = colors[Math.floor(Math.random()*colors.length)];
+      c.style.setProperty('--d', (1.5+Math.random()*2)+'s');
+      c.style.setProperty('--del', (Math.random()*1.5)+'s');
+      c.style.setProperty('--tx', (Math.random()*200-100)+'px');
+      overlay.appendChild(c);
+    }
+    const panda = document.createElement('div');
+    panda.className = 'panda-dance';
+    panda.innerHTML = '<svg viewBox="0 0 100 100" width="90" height="90"><circle cx="50" cy="55" r="38" fill="white"/><circle cx="20" cy="22" r="15" fill="#2a2a2a"/><circle cx="80" cy="22" r="15" fill="#2a2a2a"/><circle cx="20" cy="22" r="9" fill="#3d3d3d"/><circle cx="80" cy="22" r="9" fill="#3d3d3d"/><ellipse cx="35" cy="50" rx="13" ry="11" fill="#2a2a2a" transform="rotate(-8 35 50)"/><ellipse cx="65" cy="50" rx="13" ry="11" fill="#2a2a2a" transform="rotate(8 65 50)"/><ellipse cx="35" cy="49" rx="6" ry="7" fill="white"/><ellipse cx="65" cy="49" rx="6" ry="7" fill="white"/><circle cx="37" cy="50" r="3.5" fill="#111"/><circle cx="67" cy="50" r="3.5" fill="#111"/><circle cx="38.5" cy="48" r="1.5" fill="white"/><circle cx="68.5" cy="48" r="1.5" fill="white"/><ellipse cx="50" cy="60" rx="5" ry="3.5" fill="#2a2a2a"/><path d="M44 64 Q50 72 56 64" fill="none" stroke="#2a2a2a" stroke-width="2" stroke-linecap="round"/><ellipse cx="25" cy="60" rx="7" ry="4.5" fill="#ff9eb5" opacity="0.5"/><ellipse cx="75" cy="60" rx="7" ry="4.5" fill="#ff9eb5" opacity="0.5"/></svg>';
+    const msg = document.createElement('div');
+    msg.className = 'celebration-msg';
+    msg.textContent = 'Hôm nay gặp em rồi !
+Vui lắm nha !';
+    overlay.appendChild(panda);
+    overlay.appendChild(msg);
+    document.body.appendChild(overlay);
+    requestAnimationFrame(() => overlay.classList.add('show'));
+    setTimeout(() => {
+      overlay.style.opacity = '0';
+      setTimeout(() => overlay.remove(), 600);
+    }, 5500);
   }
 
   /* ===================== SCENERY ===================== */
