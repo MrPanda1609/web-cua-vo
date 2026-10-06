@@ -51,6 +51,12 @@ button{font-family:inherit;border:none;background:none;color:inherit;cursor:poin
 .lock-hint{font-size:13px;color:var(--ink-faint);letter-spacing:.06em;animation:bob 2.2s ease-in-out infinite}
 @keyframes bob{0%,100%{transform:translateY(0);opacity:.55}50%{transform:translateY(-8px);opacity:1}}
 .lock-bar{width:130px;height:5px;border-radius:99px;background:rgba(255,255,255,.85);margin:0 auto}
+.lock-chevs{display:flex;flex-direction:column;align-items:center;margin-bottom:12px}
+.lock-chevs svg{width:30px;height:16px;fill:none;stroke:rgba(255,255,255,.8);stroke-width:2.6;
+  stroke-linecap:round;stroke-linejoin:round;animation:chevUp 1.9s ease-in-out infinite}
+.lock-chevs svg:last-child{animation-delay:.3s;margin-top:-8px}
+@keyframes chevUp{0%{transform:translateY(7px);opacity:0}35%{opacity:1}100%{transform:translateY(-7px);opacity:0}}
+#scr-lock.swiping{transition:none}
 
 /* passcode */
 #passcode{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -285,6 +291,10 @@ button{font-family:inherit;border:none;background:none;color:inherit;cursor:poin
     <div class="lock-date" id="lockDate">---</div>
   </div>
   <div>
+    <div class="lock-chevs" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg>
+    </div>
     <div class="lock-hint" id="lockHint">vuốt lên để mở</div>
     <div style="height:26px"></div>
     <div class="lock-bar"></div>
@@ -346,6 +356,11 @@ button{font-family:inherit;border:none;background:none;color:inherit;cursor:poin
     <button class="dock-btn" id="goMemory" aria-label="Kỉ niệm">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.6"/><path d="M21 15.5l-5-5L5 21"/></svg>
       <span class="tip">Kỉ niệm</span>
+    </button>
+    <button class="dock-btn" id="modeBtn" aria-label="Chế độ nhấc">
+      <svg id="icoLift" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="18.5" r="2.2"/><path d="M12 15.5V4"/><path d="M7 8.5L12 3.5 17 8.5"/></svg>
+      <svg id="icoCam" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:none"><rect x="3" y="7" width="13" height="10" rx="2.5"/><path d="M16 10.5l5-3.5v9l-5-3.5"/></svg>
+      <span class="tip" id="modeTip">Chế độ nhấc</span>
     </button>
   </nav>
   <div id="subtitle" aria-hidden="true">
@@ -527,6 +542,7 @@ setTimeout(function () {
 
 
 /*__APP1__*/
+let unlocked = false; /* shared with APP2: true after PIN unlock */
 import * as THREE from 'three';
 import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 
@@ -920,9 +936,13 @@ function spawnBall(x, z, kick) {
   mesh.position.set(x, 0.34, z);
   scene.add(mesh);
   const b = { mesh, vel: new THREE.Vector3(), vy: 0, y: 0.34, cool: 0 };
+  const bring = new THREE.Mesh(new THREE.RingGeometry(0.4, 0.52, 32),
+    new THREE.MeshBasicMaterial({ color: 0xffd166, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false, fog: false }));
+  bring.rotation.x = -Math.PI / 2; bring.position.set(x, 0.02, z);
+  scene.add(bring); b.ring = bring;
   if (kick) { b.vel.set((Math.random() - 0.5) * 6, 0, (Math.random() - 0.5) * 6); b.vy = 2.5; }
   balls.push(b);
-  if (balls.length > 5) { const old = balls.shift(); scene.remove(old.mesh); }
+  if (balls.length > 5) { const old = balls.shift(); scene.remove(old.mesh); if (old.ring) scene.remove(old.ring); }
   return b;
 }
 spawnBall(-3.2, 1.5); spawnBall(2.2, -3.4);
@@ -1055,6 +1075,81 @@ function updateHearts(dt) {
     if (h.life <= 0) { scene.remove(h.sp); h.sp.material.dispose(); hearts.splice(i, 1); }
   }
 }
+/* tears */
+let tearTex = null;
+function getTearTex() {
+  if (tearTex) return tearTex;
+  const c = document.createElement('canvas'); c.width = 16; c.height = 24;
+  const x = c.getContext('2d');
+  const g = x.createLinearGradient(0, 0, 0, 24);
+  g.addColorStop(0, '#a8dcff'); g.addColorStop(1, '#3f96e0');
+  x.fillStyle = g;
+  x.beginPath();
+  x.moveTo(8, 1); x.quadraticCurveTo(14, 12, 8, 22); x.quadraticCurveTo(2, 12, 8, 1);
+  x.fill();
+  x.fillStyle = 'rgba(255,255,255,0.75)';
+  x.beginPath(); x.arc(6, 9, 2, 0, 7); x.fill();
+  tearTex = new THREE.CanvasTexture(c); tearTex.colorSpace = THREE.SRGBColorSpace;
+  return tearTex;
+}
+const tears = [];
+const _eyeV = new THREE.Vector3();
+function spawnTear() {
+  (Math.random() < 0.5 ? eyeLMesh : eyeRMesh).getWorldPosition(_eyeV);
+  const m = new THREE.SpriteMaterial({ map: getTearTex(), transparent: true, depthWrite: false, fog: false });
+  const sp = new THREE.Sprite(m);
+  const s = 0.1 + Math.random() * 0.05;
+  sp.scale.set(s, s * 1.5, 1);
+  sp.position.copy(_eyeV);
+  scene.add(sp);
+  tears.push({ sp, vy: -0.4, life: 1.5 });
+}
+function updateTears(dt) {
+  for (let i = tears.length - 1; i >= 0; i--) {
+    const tr = tears[i];
+    tr.life -= dt; tr.vy -= 7 * dt;
+    tr.sp.position.y += tr.vy * dt;
+    tr.sp.position.x += Math.sin(tr.life * 9) * dt * 0.15;
+    tr.sp.material.opacity = Math.max(0, Math.min(1, tr.life * 1.2));
+    if (tr.life <= 0 || tr.sp.position.y < 0.02) { scene.remove(tr.sp); tr.sp.material.dispose(); tears.splice(i, 1); }
+  }
+}
+/* dust puffs */
+let puffTex = null;
+function getPuffTex() {
+  if (puffTex) return puffTex;
+  const c = document.createElement('canvas'); c.width = c.height = 64;
+  const x = c.getContext('2d');
+  const g = x.createRadialGradient(32, 32, 4, 32, 32, 30);
+  g.addColorStop(0, 'rgba(255,250,240,0.85)'); g.addColorStop(1, 'rgba(255,250,240,0)');
+  x.fillStyle = g; x.fillRect(0, 0, 64, 64);
+  puffTex = new THREE.CanvasTexture(c); puffTex.colorSpace = THREE.SRGBColorSpace;
+  return puffTex;
+}
+const puffs = [];
+function spawnPuff(x, y, z, n) {
+  for (let i = 0; i < (n || 5); i++) {
+    const m = new THREE.SpriteMaterial({ map: getPuffTex(), transparent: true, depthWrite: false, fog: false });
+    const sp = new THREE.Sprite(m);
+    const s = 0.25 + Math.random() * 0.3;
+    sp.scale.set(s, s, 1);
+    const a = Math.random() * Math.PI * 2;
+    sp.position.set(x + Math.cos(a) * 0.3, y + Math.random() * 0.2, z + Math.sin(a) * 0.3);
+    scene.add(sp);
+    puffs.push({ sp, vx: Math.cos(a) * (0.8 + Math.random()), vy: 0.8 + Math.random() * 0.8, vz: Math.sin(a) * (0.8 + Math.random()), life: 0.7 });
+  }
+}
+function updatePuffs(dt) {
+  for (let i = puffs.length - 1; i >= 0; i--) {
+    const pf = puffs[i];
+    pf.life -= dt;
+    pf.sp.position.x += pf.vx * dt; pf.sp.position.y += pf.vy * dt; pf.sp.position.z += pf.vz * dt;
+    const s = pf.sp.scale.x + dt * 1.6;
+    pf.sp.scale.set(s, s, 1);
+    pf.sp.material.opacity = Math.max(0, pf.life / 0.7);
+    if (pf.life <= 0) { scene.remove(pf.sp); pf.sp.material.dispose(); puffs.splice(i, 1); }
+  }
+}
 /* tossed bamboo snack */
 let snackMesh = null;
 function spawnSnack(x, z) {
@@ -1075,7 +1170,7 @@ function spawnSnack(x, z) {
 }
 
 /* draggable bamboo toy */
-let bambooItem = null, bambooRespawnT = -1, dragItem = false;
+let bambooItem = null, bambooRespawnT = -1;
 function buildBambooItem() {
   const g = new THREE.Group();
   const stalkMat = new THREE.MeshLambertMaterial({ color: 0x46b358 });
@@ -1207,6 +1302,10 @@ function buildPanda() {
   headGroup.add(mouthMesh);
 }
 buildPanda();
+const beoRing = new THREE.Mesh(new THREE.RingGeometry(0.72, 0.92, 40),
+  new THREE.MeshBasicMaterial({ color: 0xffd166, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false, fog: false }));
+beoRing.rotation.x = -Math.PI / 2;
+scene.add(beoRing);
 spawnBambooItem();
 
 /* ---------- pet brain: states ---------- */
@@ -1216,7 +1315,9 @@ const pet = {
   action: null, actionT: 0,
   eatT: 0, napT: 0, munchT: 0,
   snack: null,
-  playT: 0, kicks: 0, batT: -1, batDone: false, batCool: 0
+  playT: 0, kicks: 0, batT: -1, batDone: false, batCool: 0,
+  bumpCool: 0, flop: 0, crying: false, throwV: null, spin: null, bounces: 0,
+  tripped: false, tripSide: 1, tearT: 0, whimperT: 0
 };
 const anim = {
   asleep: true, eyeOpen: 0.08,
@@ -1231,9 +1332,26 @@ function petKick() { /* happy bounce when nudging ball */ }
 
 function petSayHi() { triggerWave(); }
 
+const WALL_R = PLAY_R - 0.5; /* invisible wall just inside the fence */
+function triggerBump() {
+  if (pet.action || anim.asleep) return;
+  pet.action = 'bump'; pet.actionT = 0; pet.moving = false;
+  if (window.SFX && window.SFX.squeak) window.SFX.squeak();
+  spawnPuff(pandaGroup.position.x, 1.7, pandaGroup.position.z, 4);
+}
+function startTrip() {
+  if (pet.action || anim.asleep || pet.state === 'trip') return;
+  pet.action = null;
+  pet.state = 'trip'; pet.stateT = 0; pet.moving = false;
+  pet.tripped = false; pet.flop = 0;
+  pet.tripSide = Math.random() < 0.5 ? 1 : -1;
+  pet.tearT = 0.4; pet.whimperT = 0.7;
+  if (window.SFX && window.SFX.squeak) window.SFX.squeak();
+}
 function updatePet(dt, t) {
   const p = pandaGroup.position;
   pet.stateT += dt;
+  pet.bumpCool = Math.max(0, pet.bumpCool - dt);
   let wantMove = false;
 
   if (pet.action) {
@@ -1254,6 +1372,14 @@ function updatePet(dt, t) {
       const k = Math.min(1, at / 0.55);
       pandaGroup.position.y = Math.sin(k * Math.PI) * 0.45;
       if (k >= 1) { pet.action = null; pandaGroup.position.y = 0; }
+    } else if (pet.action === 'bump') {
+      /* bonk! squash + dizzy head shake */
+      const k = Math.min(1, at / 0.5);
+      const sq = Math.sin(k * Math.PI);
+      pandaGroup.scale.set(1 + 0.13 * sq, 1 - 0.19 * sq, 1 + 0.13 * sq);
+      headGroup.rotation.z = Math.sin(k * Math.PI * 3) * 0.28 * (1 - k);
+      headGroup.rotation.x = -0.18 * sq;
+      if (k >= 1) { pet.action = null; pandaGroup.scale.set(1, 1, 1); headGroup.rotation.z = 0; }
     }
     return false;
   }
@@ -1361,6 +1487,115 @@ function updatePet(dt, t) {
     case 'nap':
       if (pet.stateT > pet.napT) { pet.state = 'idle'; pet.stateT = 0; pet.action = 'hop'; pet.actionT = 0; }
       break;
+    case 'trip': {
+      /* stumble -> ragdoll fall -> sit & cry -> get up */
+      const st = pet.stateT;
+      pet.moving = false;
+      if (st < 0.45) {
+        /* stumble: lurch forward, arms windmill */
+        const k = st / 0.45, w = t * 28;
+        pandaGroup.rotation.x = 0.55 * k;
+        legFL.rotation.x = Math.sin(w) * 1.1; legFR.rotation.x = Math.sin(w + Math.PI) * 1.1;
+        legBL.rotation.x = Math.sin(w + Math.PI) * 0.7; legBR.rotation.x = Math.sin(w) * 0.7;
+        headGroup.rotation.x = 0.45 * k;
+        const fx = Math.sin(pandaGroup.rotation.y), fz = Math.cos(pandaGroup.rotation.y);
+        p.x += fx * dt * 1.3 * (1 - k); p.z += fz * dt * 1.3 * (1 - k);
+      } else if (st < 0.85) {
+        /* fall over sideways, limbs go limp (a touch of ragdoll) */
+        if (!pet.tripped) {
+          pet.tripped = true; pet.flop = 1;
+          if (window.SFX && window.SFX.thud) window.SFX.thud();
+          spawnPuff(p.x, 0.35, p.z, 7);
+        }
+        const k = Math.min(1, (st - 0.45) / 0.4), e = 1 - Math.pow(1 - k, 3);
+        pandaGroup.rotation.z = 1.35 * e * pet.tripSide;
+        pandaGroup.rotation.x = 0.55 * (1 - e * 0.4);
+        pandaGroup.position.y = 0.3 * e;
+      } else if (st < 3.7) {
+        /* sit up and cry */
+        const k = Math.min(1, (st - 0.85) / 0.5), e = k * k * (3 - 2 * k);
+        pandaGroup.rotation.z = (1.35 * pet.tripSide) * (1 - e) + 0.16 * e;
+        pandaGroup.rotation.x = 0.33 * (1 - e) - 0.42 * e;
+        pandaGroup.position.y = 0.3 * (1 - e) + 0.1 * e;
+        pet.crying = true;
+        pet.flop = Math.max(0, pet.flop - dt * 2);
+        pet.tearT -= dt;
+        if (pet.tearT <= 0) { pet.tearT = 0.32 + Math.random() * 0.22; spawnTear(); }
+        pet.whimperT -= dt;
+        if (pet.whimperT <= 0) { pet.whimperT = 1.0 + Math.random() * 0.6; if (window.SFX && window.SFX.whimper) window.SFX.whimper(); }
+      } else {
+        /* get up and shake it off */
+        pet.crying = false; pet.tripped = false;
+        pandaGroup.rotation.z = 0; pandaGroup.rotation.x = 0;
+        pandaGroup.position.y = 0; pandaGroup.scale.set(1, 1, 1);
+        pet.action = 'hop'; pet.actionT = 0;
+        pet.state = 'idle'; pet.stateT = -1.5;
+      }
+      break;
+    }
+    case 'carried': {
+      pet.moving = false;
+      if (carry) {
+        const cp = pandaGroup.position;
+        const k = Math.min(1, dt * 7);
+        const ox = cp.x, oz = cp.z;
+        cp.x += (carry.tx - cp.x) * k;
+        cp.y += (carry.ty - cp.y) * k;
+        cp.z += (carry.tz - cp.z) * k;
+        const now = performance.now() / 1000;
+        carry.hist.push({ x: cp.x, y: cp.y, z: cp.z, t: now });
+        while (carry.hist.length > 2 && carry.hist[0].t < now - 0.28) carry.hist.shift();
+        carry.px = ox; carry.pz = oz;
+        pet.flop = 1; /* flailing limbs */
+      }
+      break;
+    }
+    case 'thrown': {
+      pet.moving = false;
+      const p = pandaGroup.position, tv = pet.throwV;
+      if (!tv) { finishThrow(); break; }
+      tv.y -= 22 * dt;
+      p.x += tv.x * dt; p.y += tv.y * dt; p.z += tv.z * dt;
+      pandaGroup.rotation.x += pet.spin.x * dt;
+      pandaGroup.rotation.z += pet.spin.z * dt;
+      const sc = pandaGroup.scale; /* restore squash */
+      sc.x += (1 - sc.x) * Math.min(1, dt * 8);
+      sc.y += (1 - sc.y) * Math.min(1, dt * 8);
+      sc.z += (1 - sc.z) * Math.min(1, dt * 8);
+      const r = Math.hypot(p.x, p.z);
+      if (r > WALL_R) { /* bounce off the invisible wall */
+        const nx = p.x / r, nz = p.z / r;
+        p.x = nx * WALL_R; p.z = nz * WALL_R;
+        const dot = tv.x * nx + tv.z * nz;
+        if (dot > 0) { tv.x -= 2 * dot * nx; tv.z -= 2 * dot * nz; tv.x *= 0.6; tv.z *= 0.6; }
+        if (window.SFX && window.SFX.boing) window.SFX.boing();
+        spawnPuff(p.x, 1.2, p.z, 4);
+      }
+      if (p.y <= 0.02) {
+        p.y = 0.02;
+        if (Math.abs(tv.y) > 2 && pet.bounces < 4) {
+          tv.y *= -0.45; tv.x *= 0.7; tv.z *= 0.7;
+          pet.spin.x *= 0.5; pet.spin.z *= 0.5;
+          pet.bounces++;
+          pandaGroup.scale.set(1.18, 0.72, 1.18);
+          if (window.SFX && window.SFX.boing) window.SFX.boing();
+          spawnPuff(p.x, 0.3, p.z, 5);
+          if (pet.bounces === 1 && window.SFX && window.SFX.thud) window.SFX.thud();
+        } else finishThrow();
+      }
+      break;
+    }
+    case 'dizzy': {
+      pet.moving = false;
+      const w = Math.sin(pet.stateT * 9) * 0.16 * Math.max(0, 1 - pet.stateT / 1.8);
+      pandaGroup.rotation.z = w;
+      if (pet.stateT > 1.8) {
+        pandaGroup.rotation.z = 0;
+        pet.action = 'hop'; pet.actionT = 0;
+        pet.state = 'idle'; pet.stateT = -1;
+      }
+      break;
+    }
     case 'munchItem':
       pet.eatT += dt;
       pet.munchT += dt;
@@ -1383,10 +1618,24 @@ function updatePet(dt, t) {
       p.x += (dx / d) * Math.min(sp, d);
       p.z += (dz / d) * Math.min(sp, d);
       const rr = Math.hypot(p.x, p.z);
-      if (rr > PLAY_R) { p.x *= PLAY_R / rr; p.z *= PLAY_R / rr; }
+      if (rr > WALL_R) {
+        /* invisible wall: hard stop + bonk */
+        p.x *= WALL_R / rr; p.z *= WALL_R / rr;
+        if (pet.bumpCool <= 0) { pet.bumpCool = 1.6; triggerBump(); }
+      }
+      /* bump into the bamboo bowl */
+      const bdx = p.x - bowlPos.x, bdz = p.z - bowlPos.z;
+      if (Math.hypot(bdx, bdz) < 0.9 && pet.state !== 'toBowl' && pet.state !== 'munchBowl' && pet.bumpCool <= 0) {
+        pet.bumpCool = 1.6;
+        const bd = Math.max(0.01, Math.hypot(bdx, bdz));
+        p.x = bowlPos.x + (bdx / bd) * 0.9; p.z = bowlPos.z + (bdz / bd) * 0.9;
+        triggerBump();
+      }
     }
     pet.moving = true;
     pet.walkPhase += dt * 11;
+    /* random trip while moving */
+    if (Math.random() < dt * 0.045) startTrip();
   } else {
     pet.moving = false;
   }
@@ -1421,7 +1670,38 @@ function animatePanda(now, dt) {
   } else if (!pet.action) {
     legFL.rotation.x *= 0.9; legFR.rotation.x *= 0.9;
     legBL.rotation.x *= 0.9; legBR.rotation.x *= 0.9;
-    if (pandaGroup.position.y > 0.01 && !pet.action) pandaGroup.position.y *= 0.9;
+    if (pandaGroup.position.y > 0.01 && !pet.action && pet.state !== 'trip') pandaGroup.position.y *= 0.9;
+  }
+  /* a touch of ragdoll: loose dangling limbs */
+  if (pet.flop > 0.01) {
+    const f = pet.flop, ft = t * 14;
+    legFL.rotation.x += Math.sin(ft) * 0.55 * f;
+    legFR.rotation.x += Math.sin(ft + 2.1) * 0.55 * f;
+    legBL.rotation.x += Math.sin(ft + 4.2) * 0.45 * f;
+    legBR.rotation.x += Math.sin(ft + 1.1) * 0.45 * f;
+    legFL.rotation.z += Math.sin(ft * 0.7) * 0.3 * f;
+    legFR.rotation.z -= Math.sin(ft * 0.7 + 1) * 0.3 * f;
+    pet.flop = Math.max(0, pet.flop - dt * 0.7);
+  }
+  /* carried: face camera, dangle, panic arms, tears */
+  if (pet.state === 'carried' && carry) {
+    const p = pandaGroup.position;
+    const des = Math.atan2(camera.position.x - p.x, camera.position.z - p.z);
+    let dyaw = des - pandaGroup.rotation.y;
+    while (dyaw > Math.PI) dyaw -= Math.PI * 2;
+    while (dyaw < -Math.PI) dyaw += Math.PI * 2;
+    pandaGroup.rotation.y += dyaw * Math.min(1, dt * 6);
+    const vx = (p.x - carry.px) / Math.max(dt, 0.001), vz = (p.z - carry.pz) / Math.max(dt, 0.001);
+    const sway = THREE.MathUtils.clamp(-vx * 0.045, -0.45, 0.45);
+    const tilt = THREE.MathUtils.clamp(vz * 0.035, -0.35, 0.35);
+    pandaGroup.rotation.z += (sway - pandaGroup.rotation.z) * Math.min(1, dt * 5);
+    pandaGroup.rotation.x += (tilt - pandaGroup.rotation.x) * Math.min(1, dt * 5);
+    legFL.rotation.z += (0.9 - legFL.rotation.z) * Math.min(1, dt * 6);
+    legFR.rotation.z += (-0.9 - legFR.rotation.z) * Math.min(1, dt * 6);
+    carry.cryT -= dt;
+    if (carry.cryT <= 0) { carry.cryT = 0.35 + Math.random() * 0.3; spawnTear(); }
+    carry.whiT -= dt;
+    if (carry.whiT <= 0) { carry.whiT = 1.0 + Math.random() * 0.7; if (window.SFX && window.SFX.whimper) window.SFX.whimper(); }
   }
 
   /* tail */
@@ -1429,7 +1709,7 @@ function animatePanda(now, dt) {
   tailMesh.rotation.y = Math.sin(t * 2.8) * 0.35 * (0.4 + anim.wagBoost * 2.5 + (pet.moving ? 1.2 : 0));
 
   /* eyes */
-  const eyeTarget = (anim.asleep || napping) ? 0.08 : (munching ? 0.16 : 1);
+  const eyeTarget = (anim.asleep || napping) ? 0.08 : (munching ? 0.16 : (pet.crying ? 0.14 : 1));
   anim.eyeOpen += (eyeTarget - anim.eyeOpen) * Math.min(1, dt * 4);
   let blinkS = 1;
   if (!anim.asleep && !napping) {
@@ -1441,6 +1721,16 @@ function animatePanda(now, dt) {
     }
   }
   eyeLMesh.scale.y = eyeRMesh.scale.y = anim.eyeOpen * blinkS;
+  /* crying face: sad angled eyes + frown */
+  if (pet.crying) {
+    eyeLMesh.rotation.z += (0.42 - eyeLMesh.rotation.z) * k;
+    eyeRMesh.rotation.z += (-0.42 - eyeRMesh.rotation.z) * k;
+    mouthMesh.rotation.z += (0 - mouthMesh.rotation.z) * k;
+  } else {
+    eyeLMesh.rotation.z *= 0.9; eyeRMesh.rotation.z *= 0.9;
+    if (Math.abs(mouthMesh.rotation.z - Math.PI) > 0.01)
+      mouthMesh.rotation.z += (Math.PI - mouthMesh.rotation.z) * k;
+  }
 
   /* head */
   if (anim.asleep) {
@@ -1460,6 +1750,12 @@ function animatePanda(now, dt) {
     headGroup.rotation.x += (0.42 - headGroup.rotation.x) * k;
     headGroup.rotation.y *= 0.9;
     headGroup.rotation.z += (0.12 - headGroup.rotation.z) * k;
+  } else if (pet.state === 'trip' && pet.stateT < 0.85) {
+    /* trip animation drives the head directly */
+  } else if (pet.crying) {
+    headGroup.rotation.x += (0.52 - headGroup.rotation.x) * k;
+    headGroup.rotation.y *= 0.92;
+    headGroup.rotation.z += (0.1 * Math.sin(t * 7) - headGroup.rotation.z) * k; /* sobbing */
   } else {
     headGroup.rotation.y += (anim.mouseX * 0.5 - headGroup.rotation.y) * k;
     headGroup.rotation.x += ((-anim.mouseY * 0.28 + Math.sin(t * 1.3) * 0.03) - headGroup.rotation.x) * k;
@@ -1521,7 +1817,7 @@ window.Panda = {
   sleep(v) { anim.asleep = !!v; if (!v) triggerWave(); },
   onTap: null,
   feed() {
-    if (anim.asleep || pet.state === 'toSnack' || pet.state === 'munchSnack') return false;
+    if (carry || anim.asleep || pet.state === 'toSnack' || pet.state === 'munchSnack') return false;
     const a = Math.random() * Math.PI * 2, r = 2 + Math.random() * 2.5;
     const x = pandaGroup.position.x + Math.cos(a) * r, z = pandaGroup.position.z + Math.sin(a) * r;
     const rr = Math.hypot(x, z), cl = Math.min(1, (PLAY_R - 0.5) / Math.max(0.01, rr));
@@ -1531,14 +1827,14 @@ window.Panda = {
     return true;
   },
   goTo(x, z) {
-    if (anim.asleep || pet.state === 'munchItem') return false;
+    if (carry || anim.asleep || pet.state === 'munchItem') return false;
     pet.action = null;
     pet.state = 'wander'; pet.stateT = 0;
     pet.tx = x; pet.tz = z;
     return true;
   },
   play() {
-    if (anim.asleep || pet.state === 'playBall') return false;
+    if (carry || anim.asleep || pet.state === 'playBall') return false;
     const p = pandaGroup.position;
     const a = Math.random() * Math.PI * 2;
     spawnBall(p.x + Math.cos(a) * 2.4, p.z + Math.sin(a) * 2.4, true);
@@ -1548,11 +1844,18 @@ window.Panda = {
     return true;
   }
 };
+let liftMode = false;
 window.Scene = {
   setDay(v) { dayState.target = v ? 1 : 0; },
-  setFollow(v) { followPanda = !!v; camDTarget = followPanda ? FOCUS_D : WIDE_D; }
+  setFollow(v) { followPanda = !!v; camDTarget = followPanda ? FOCUS_D : WIDE_D; },
+  setLiftMode(v) {
+    liftMode = !!v;
+    dragging = false;
+    camDTarget = liftMode ? 10 : (IS_MOBILE ? 7 : (followPanda ? FOCUS_D : WIDE_D));
+  },
+  isLiftMode() { return liftMode; }
 };
-window.__pet = { get bamboo() { return bambooItem; }, panda: pandaGroup, pet, cam: camera, get dragItem() { return dragItem; } };
+window.__pet = { get bamboo() { return bambooItem; }, panda: pandaGroup, pet, cam: camera, balls, get dragObj() { return dragObj; }, get carryObj() { return carry; }, get press() { return pandaPress ? { id: pandaPress.id } : null } };
 
 /* tap: panda vs ground | drag: bamboo toy | orbit */
 const raycaster = new THREE.Raycaster();
@@ -1560,9 +1863,11 @@ const tapNDC = new THREE.Vector2();
 let downX = 0, downY = 0, lastPX = 0, lastPY = 0;
 let dragging = false;
 let camYaw = 0.55, camPitch = 0.13, yawV = 0, pitchV = 0, idleT = 0;
+let parX = 0, parY = 0;
 let followPanda = false;
 let camD = 13.5, camDTarget = 13.5;
 const WIDE_D = 13.5, FOCUS_D = 5.5;
+if (IS_MOBILE) { followPanda = true; camDTarget = 7; } /* mobile: camera always locked on Beo */
 function setRay(e) {
   const r = canvas.getBoundingClientRect();
   tapNDC.set(((e.clientX - r.left) / r.width) * 2 - 1, -(((e.clientY - r.top) / r.height) * 2 - 1));
@@ -1583,47 +1888,24 @@ function tapAt(e) {
     }
   }
 }
-canvas.addEventListener('pointerdown', (e) => {
-  idleT = 0;
-  if (bambooItem && !anim.asleep) {
-    setRay(e);
-    if (raycaster.intersectObject(bambooItem, true).length > 0) {
-      dragItem = true; dragging = false;
-      bambooItem.position.y = 0.18;
-      bambooItem.userData.ring.material.opacity = 0.9;
-      try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
-      return;
-    }
-  }
-  dragging = true;
-  downX = lastPX = e.clientX; downY = lastPY = e.clientY;
-  try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
-});
-canvas.addEventListener('pointermove', (e) => {
-  if (dragItem && bambooItem) {
-    setRay(e);
-    const pt = new THREE.Vector3();
-    if (raycaster.ray.intersectPlane(_groundPlane, pt)) {
-      const r = Math.hypot(pt.x, pt.z), cl = Math.min(1, PLAY_R / Math.max(0.01, r));
-      bambooItem.position.set(pt.x * cl, 0.18, pt.z * cl);
-    }
-    return;
-  }
-  if (!dragging) return;
-  const dx = e.clientX - lastPX, dy = e.clientY - lastPY;
-  lastPX = e.clientX; lastPY = e.clientY;
-  camYaw -= dx * 0.0052;
-  camPitch = THREE.MathUtils.clamp(camPitch + dy * 0.0032, 0.05, 0.62);
-  yawV = -dx * 0.0052; pitchV = dy * 0.0032;
-  idleT = 0;
-});
-function endDragItem() {
-  if (!dragItem) return;
-  dragItem = false;
-  if (bambooItem) {
+/* unified touch: orbit / pinch-zoom / drag bamboo / drag ball */
+const pointers = new Map();
+let pinchD0 = 0, pinchCamD0 = 0;
+let dragObj = null; // {kind:'bamboo'} | {kind:'ball', b}
+let carry = null; // {id, tx,ty,tz, plane, hist, cryT, whiT, px, pz} — carrying Beo
+let pandaPress = null; // {id, x, y, timer} — long-press candidate
+const _carryPlane = new THREE.Plane();
+function pinchDist() {
+  const v = [...pointers.values()];
+  return Math.hypot(v[0].x - v[1].x, v[0].y - v[1].y);
+}
+function dropDragObj() {
+  if (!dragObj) return;
+  const o = dragObj; dragObj = null;
+  const px = pandaGroup.position.x, pz = pandaGroup.position.z;
+  if (o.kind === 'bamboo' && bambooItem) {
     bambooItem.position.y = 0;
-    const dx = bambooItem.position.x - pandaGroup.position.x;
-    const dz = bambooItem.position.z - pandaGroup.position.z;
+    const dx = bambooItem.position.x - px, dz = bambooItem.position.z - pz;
     if (Math.hypot(dx, dz) < 1.5 && !anim.asleep) {
       pandaGroup.rotation.y = Math.atan2(dx, dz);
       pet.action = null; pet.state = 'munchItem'; pet.stateT = 0; pet.eatT = 0; pet.munchT = 0;
@@ -1631,15 +1913,195 @@ function endDragItem() {
       bambooRespawnT = 2.5;
       if (window.SFX && window.SFX.chime) window.SFX.chime();
     }
+  } else if (o.kind === 'ball' && o.b) {
+    o.b.y = 0.34;
+    const dx = o.b.mesh.position.x - px, dz = o.b.mesh.position.z - pz;
+    if (Math.hypot(dx, dz) < 1.5 && !anim.asleep) {
+      /* hand the ball to Beo: happy catch -> play session */
+      o.b.vel.set(0, 0, 0); o.b.vy = 2.2;
+      pet.action = null; pet.state = 'playBall'; pet.stateT = 0;
+      pet.playT = 0; pet.kicks = 0; pet.batT = -1; pet.batCool = 0.3;
+      spawnHearts(3, false);
+      if (window.SFX && window.SFX.chime) window.SFX.chime();
+    }
   }
 }
+function endDragItem() { dropDragObj(); }
+/* ----- grab & lift Beo: long-press 1s, drag to lift, release to toss ----- */
+function enterCarry(pid) {
+  if (carry || anim.asleep) { pandaPress = null; return; }
+  pandaPress = null;
+  dragging = false;
+  pet.action = null; pet.state = 'carried'; pet.stateT = 0;
+  pet.crying = true; pet.flop = 0;
+  pandaGroup.scale.set(1, 1, 1);
+  const n = new THREE.Vector3();
+  camera.getWorldDirection(n);
+  _carryPlane.setFromNormalAndCoplanarPoint(n, pandaGroup.position);
+  carry = { id: pid, tx: pandaGroup.position.x, ty: 2.4, tz: pandaGroup.position.z,
+            plane: _carryPlane.clone(), hist: [], cryT: 0.6, whiT: 0.4,
+            px: pandaGroup.position.x, pz: pandaGroup.position.z };
+  if (window.SFX && window.SFX.squeal) window.SFX.squeal();
+}
+function moveCarry(e) {
+  setRay(e);
+  const pt = new THREE.Vector3();
+  if (raycaster.ray.intersectPlane(carry.plane, pt)) {
+    let cx = THREE.MathUtils.clamp(pt.x, -8, 8);
+    let cz = THREE.MathUtils.clamp(pt.z, -8, 8);
+    const r = Math.hypot(cx, cz);
+    if (r > WALL_R) { cx *= WALL_R / r; cz *= WALL_R / r; }
+    carry.tx = cx;
+    carry.ty = THREE.MathUtils.clamp(pt.y, 0.8, 6.5);
+    carry.tz = cz;
+  }
+}
+function releaseCarry() {
+  if (!carry) return;
+  let vx = 0, vy = 0, vz = 0;
+  const hst = carry.hist;
+  if (hst.length >= 2) {
+    const a = hst[0], b = hst[hst.length - 1];
+    const dt = Math.max(0.06, b.t - a.t);
+    vx = (b.x - a.x) / dt; vy = (b.y - a.y) / dt; vz = (b.z - a.z) / dt;
+  }
+  const sp = Math.hypot(vx, vy, vz), maxV = 9;
+  if (sp > maxV) { vx *= maxV / sp; vy *= maxV / sp; vz *= maxV / sp; }
+  if (sp < 1.2) { vx *= 0.3; vz *= 0.3; vy = 2.2; }
+  else vy += 0.8;
+  carry = null;
+  pet.state = 'thrown'; pet.stateT = 0;
+  pet.throwV = { x: vx, y: vy, z: vz };
+  pet.spin = { x: (Math.random() - 0.5) * 7, z: (Math.random() - 0.5) * 7 };
+  pet.bounces = 0;
+  camDTarget = IS_MOBILE ? 7 : (followPanda ? FOCUS_D : WIDE_D);
+  if (window.SFX && window.SFX.whee) window.SFX.whee();
+}
+function finishThrow() {
+  pandaGroup.position.y = 0;
+  pandaGroup.rotation.x = 0; pandaGroup.rotation.z = 0;
+  pandaGroup.scale.set(1, 1, 1);
+  pet.crying = false;
+  pet.state = 'dizzy'; pet.stateT = 0;
+}
+canvas.addEventListener('pointerdown', (e) => {
+  idleT = 0;
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (pointers.size === 2) {
+    pinchD0 = pinchDist(); pinchCamD0 = camDTarget;
+    dragging = false; dropDragObj();
+    try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
+    return;
+  }
+  if (pointers.size > 2) return;
+  if (!anim.asleep) {
+    setRay(e);
+    if (bambooItem && raycaster.intersectObject(bambooItem, true).length > 0) {
+      dragObj = { kind: 'bamboo', ox: 0, oz: 0 }; dragging = false;
+      const _pt0 = new THREE.Vector3();
+      if (raycaster.ray.intersectPlane(_groundPlane, _pt0)) {
+        dragObj.ox = bambooItem.position.x - _pt0.x;
+        dragObj.oz = bambooItem.position.z - _pt0.z;
+      }
+      bambooItem.position.y = 0.18;
+      bambooItem.userData.ring.material.opacity = 0.9;
+      try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
+      return;
+    }
+    const hits = raycaster.intersectObjects(balls.map(b => b.mesh), false);
+    if (hits.length > 0) {
+      const b = balls.find(bb => bb.mesh === hits[0].object);
+      if (b) {
+        /* grab offset: the touch ray hits the ground beyond the ball's
+           raised center; keep finger-to-ball alignment so it doesn't jump */
+        dragObj = { kind: 'ball', b, ox: 0, oz: 0 }; dragging = false;
+        const _pt0 = new THREE.Vector3();
+        if (raycaster.ray.intersectPlane(_groundPlane, _pt0)) {
+          dragObj.ox = b.mesh.position.x - _pt0.x;
+          dragObj.oz = b.mesh.position.z - _pt0.z;
+        }
+        b.vel.set(0, 0, 0); b.vy = 0; b.y = 0.7;
+        try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
+        return;
+      }
+    }
+  }
+  if (!anim.asleep && !carry && !pandaPress) {
+    setRay(e);
+    if (raycaster.intersectObject(pandaGroup, true).length > 0) {
+      const pid = e.pointerId;
+      pandaPress = { id: pid, x: e.clientX, y: e.clientY,
+        timer: setTimeout(() => { if (pandaPress && pandaPress.id === pid) enterCarry(pid); }, liftMode ? 350 : 1000) };
+    }
+  }
+  dragging = true;
+  downX = lastPX = e.clientX; downY = lastPY = e.clientY;
+  try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
+});
+canvas.addEventListener('pointermove', (e) => {
+  if (pointers.has(e.pointerId)) pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (pointers.size === 2) {
+    if (carry || liftMode) return;
+    const d = pinchDist();
+    if (pinchD0 > 10 && d > 10) {
+      const lo = followPanda ? 3.5 : 8, hi = followPanda ? 11 : 20;
+      camDTarget = THREE.MathUtils.clamp(pinchCamD0 * pinchD0 / d, lo, hi);
+    }
+    idleT = 0;
+    return;
+  }
+  if (pandaPress && Math.hypot(e.clientX - pandaPress.x, e.clientY - pandaPress.y) > 14) {
+    clearTimeout(pandaPress.timer); pandaPress = null;
+  }
+  if (carry && e.pointerId === carry.id) { moveCarry(e); return; }
+  if (dragObj) {
+    setRay(e);
+    const pt = new THREE.Vector3();
+    if (raycaster.ray.intersectPlane(_groundPlane, pt)) {
+      let fx = pt.x + (dragObj.ox || 0), fz = pt.z + (dragObj.oz || 0);
+      const fr = Math.hypot(fx, fz), fmax = PLAY_R - 0.5;
+      if (fr > fmax) { fx *= fmax / fr; fz *= fmax / fr; }
+      if (dragObj.kind === 'bamboo' && bambooItem) bambooItem.position.set(fx, 0.18, fz);
+      else if (dragObj.kind === 'ball' && dragObj.b) {
+        dragObj.b.mesh.position.set(fx, 0.7, fz);
+        dragObj.b.y = 0.7;
+      }
+    }
+    return;
+  }
+  if (!dragging) return;
+  if (carry || liftMode) return;
+  const dx = e.clientX - lastPX, dy = e.clientY - lastPY;
+  lastPX = e.clientX; lastPY = e.clientY;
+  if (!followPanda) camYaw -= dx * 0.0052;
+  camPitch = THREE.MathUtils.clamp(camPitch + dy * 0.0032, 0.05, 0.62);
+  yawV = -dx * 0.0052; pitchV = dy * 0.0032;
+  idleT = 0;
+});
 canvas.addEventListener('pointerup', (e) => {
-  if (dragItem) { endDragItem(); return; }
+  const wasPinch = pointers.size === 2;
+  pointers.delete(e.pointerId);
+  if (wasPinch) {
+    pinchD0 = 0;
+    const rest = [...pointers.values()];
+    if (rest.length === 1) { lastPX = rest[0].x; lastPY = rest[0].y; downX = rest[0].x; downY = rest[0].y; }
+    dragging = false;
+    return;
+  }
+  if (pandaPress) { clearTimeout(pandaPress.timer); pandaPress = null; }
+  if (carry) { if (e.pointerId === carry.id) releaseCarry(); return; }
+  if (dragObj) { dropDragObj(); return; }
   if (!dragging) return;
   dragging = false;
-  if (Math.hypot(e.clientX - downX, e.clientY - downY) < 10) tapAt(e);
+  const tapSlop = e.pointerType === 'touch' ? 14 : 10;
+  if (Math.hypot(e.clientX - downX, e.clientY - downY) < tapSlop) tapAt(e);
 });
-canvas.addEventListener('pointercancel', () => { dragging = false; endDragItem(); });
+canvas.addEventListener('pointercancel', (e) => {
+  pointers.delete(e.pointerId);
+  pinchD0 = 0; dragging = false; dropDragObj();
+  if (pandaPress) { clearTimeout(pandaPress.timer); pandaPress = null; }
+  if (carry && e.pointerId === carry.id) releaseCarry();
+});
 canvas.addEventListener('wheel', (e) => {
   e.preventDefault();
   idleT = 0;
@@ -1655,13 +2117,37 @@ window.addEventListener('pointermove', (e) => {
 const orbitTarget = new THREE.Vector3(0, 1.05, 0);
 const _followT = new THREE.Vector3();
 function updateCamera(t, dt) {
-  if (!dragging) {
+  const camLocked = !unlocked; /* lock/passcode screens: no camera control, stays still */
+  if (carry) {
+    /* carrying Beo: freeze yaw, ease to a horizontal view for easy lifting */
+    camPitch += (0.12 - camPitch) * Math.min(1, dt * 2.5);
+    camDTarget = 9;
+    idleT = 0; yawV = 0; pitchV = 0;
+  } else if (liftMode) {
+    /* lift mode: camera frozen horizontally, glides with Beo */
+    camPitch += (0.12 - camPitch) * Math.min(1, dt * 2.5);
+    idleT = 0; yawV = 0; pitchV = 0;
+  } else if (followPanda) {
+    /* front-lock: camera eases to stay in front of Beo's face
+       (paused during tumble/spin actions to avoid dizzy swirl) */
+    if (!pet.action) {
+      let dy = pandaGroup.rotation.y - camYaw;
+      while (dy > Math.PI) dy -= Math.PI * 2;
+      while (dy < -Math.PI) dy += Math.PI * 2;
+      camYaw += dy * Math.min(1, dt * 3.2);
+    }
+    if (!dragging) {
+      camPitch = THREE.MathUtils.clamp(camPitch + pitchV, 0.05, 0.62);
+      pitchV *= 0.94;
+    }
+    idleT = 0;
+  } else if (!dragging && !camLocked) {
     camYaw += yawV; camPitch = THREE.MathUtils.clamp(camPitch + pitchV, 0.05, 0.62);
     yawV *= 0.94; pitchV *= 0.94;
     idleT += dt;
     if (idleT > 5) camYaw += dt * 0.045;
   }
-  if (followPanda) _followT.set(pandaGroup.position.x, 1.0, pandaGroup.position.z);
+  if (liftMode || followPanda) _followT.set(pandaGroup.position.x, 1.0, pandaGroup.position.z);
   else _followT.set(0, 1.05, 0);
   const fk = Math.min(1, dt * 3);
   orbitTarget.x += (_followT.x - orbitTarget.x) * fk;
@@ -1669,13 +2155,17 @@ function updateCamera(t, dt) {
   orbitTarget.z += (_followT.z - orbitTarget.z) * fk;
   camD += (camDTarget - camD) * Math.min(1, dt * 2.2);
   const cp = Math.cos(camPitch), D = camD * (camera.aspect < 0.55 ? 1.12 : 1);
-  const px = anim.mouseX * 0.5, py = anim.mouseY * 0.3;
+  /* smoothed parallax (unsmoothed jumps caused mobile jitter) */
+  const parScale = camLocked ? 0 : (IS_MOBILE ? 0.15 : 1);
+  const pk = Math.min(1, dt * 4);
+  parX += (anim.mouseX * 0.5 * parScale - parX) * pk;
+  parY += (anim.mouseY * 0.3 * parScale - parY) * pk;
   camera.position.set(
-    orbitTarget.x + D * Math.sin(camYaw) * cp + px,
-    orbitTarget.y + D * Math.sin(camPitch) + py,
+    orbitTarget.x + D * Math.sin(camYaw) * cp + parX,
+    orbitTarget.y + D * Math.sin(camPitch) + parY,
     orbitTarget.z + D * Math.cos(camYaw) * cp
   );
-  camera.lookAt(orbitTarget.x + px * 0.5, orbitTarget.y + py * 0.5, 0);
+  camera.lookAt(orbitTarget.x + parX * 0.5, orbitTarget.y + parY * 0.5, 0);
 }
 
 /* day/night blending */
@@ -1737,14 +2227,24 @@ function animate() {
   updateBalls(dt);
   updateHearts(dt);
   updateCrumbs(dt);
+  updateTears(dt);
+  updatePuffs(dt);
   updateRipples(dt);
   if (bambooRespawnT > 0) {
     bambooRespawnT -= dt;
     if (bambooRespawnT <= 0) spawnBambooItem(pandaGroup.position.x, pandaGroup.position.z);
   }
-  if (bambooItem && !dragItem) {
-    bambooItem.userData.ring.material.opacity = 0.32 + 0.22 * Math.sin(t * 3.2);
+  if (bambooItem && !dragObj) {
+    bambooItem.userData.ring.material.opacity = liftMode ? 0.6 + 0.3 * Math.sin(t * 5) : 0.32 + 0.22 * Math.sin(t * 3.2);
   }
+  /* lift-mode highlight rings */
+  const ringPulse = liftMode ? 0.45 + 0.25 * Math.sin(t * 4.5) : 0;
+  for (const b of balls) if (b.ring) {
+    b.ring.position.set(b.mesh.position.x, 0.02, b.mesh.position.z);
+    b.ring.material.opacity = (dragObj && dragObj.b === b) ? 0.9 : ringPulse;
+  }
+  beoRing.position.set(pandaGroup.position.x, 0.02, pandaGroup.position.z);
+  beoRing.material.opacity = (liftMode && !carry) ? 0.5 + 0.25 * Math.sin(t * 4.5) : 0;
   updateCamera(t, dt);
   renderer.render(scene, camera);
   ftAcc += dt; ftN++;
@@ -1810,6 +2310,10 @@ const SFX = {
   chime() { const self = this; [880, 1175, 1568].forEach((f, i) => self.tone(f, 0.32, 'sine', 0.07, null, i * 0.12)); },
   munch() { this.noise(0.09, 0.14, 1800, 2); this.noise(0.07, 0.1, 900, 2, 0.08); },
   boing() { this.tone(300, 0.16, 'sine', 0.12, 620); },
+  whimper() { this.tone(540, 0.22, 'sine', 0.07, 390); this.tone(480, 0.2, 'sine', 0.06, 340, 0.26); },
+  squeal() { this.tone(880, 0.16, 'sawtooth', 0.05, 620); this.tone(1174, 0.22, 'sine', 0.07, 840, 0.06); },
+  whee() { this.tone(420, 0.45, 'sine', 0.07, 980); this.tone(630, 0.4, 'sine', 0.05, 1240, 0.08); },
+  thud() { this.noise(0.12, 0.22, 280, 1); this.tone(120, 0.12, 'sine', 0.12, 70); },
   pop() { this.tone(500, 0.09, 'sine', 0.13, 950); },
   toggle() { this.muted = !this.muted; localStorage.setItem('sfx_muted', this.muted ? '1' : '0'); return this.muted; }
 };
@@ -1857,21 +2361,21 @@ subEl.addEventListener('click', () => {
 
 /* panda tap lines */
 const BEO_FACTS = [
-  'Con nghe nói ôm nhau 20 giây là hết stress liền đó cô~',
+  'Con nghe nói ôm nhau 20 giây là hết stress liền đó chị~',
   'Nhìn vào mắt nhau lâu lâu là tim đập nhanh hơn đó, con thử rồi nè!',
   'Nắm tay nhau đi dạo là bài thể dục ngọt ngào nhất luôn á~',
-  'Mấy cặp hay cười cùng nhau thì bên nhau lâu lắm đó cô~',
+  'Mấy cặp hay cười cùng nhau thì bên nhau lâu lắm đó chị~',
   'Ăn món ngon cùng người mình thương là hạnh phúc nhân đôi~',
   'Con thấy hai người càng ngày càng giống nhau rồi đó, tướng phu thê á!',
-  'Ngủ đủ giấc mới có sức thương nhau nhiều nhiều nha cô~',
+  'Ngủ đủ giấc mới có sức thương nhau nhiều nhiều nha chị~',
   'Con nghe nói nhớ ai nhiều thì tối sẽ mơ thấy người ta đó~',
   'Hehe, nhột quá đi~ con là Béo nè!',
-  'Suỵt… con kể cô nghe bí mật này: anh ấy nhớ cô lắm đó~'
+  'Suỵt… con kể chị nghe bí mật này: ông già nhớ chị lắm đó~'
 ];
 const BEO_DAY_LINES = [
   d => 'Hôm nay là ngày thứ ' + d + ' con ở bên hai người rồi đó~',
   d => 'Con đếm được ' + d + ' ngày yêu nhau rồi nè, nhiều ghê~',
-  d => d + ' ngày rồi đó cô, con vui lắm luôn~'
+  d => d + ' ngày rồi đó chị, con vui lắm luôn~'
 ];
 function loveDays() { return Math.floor((Date.now() - LOVE_DATE.getTime()) / 86400000); }
 window.Panda.onTap = () => {
@@ -1883,6 +2387,48 @@ window.Panda.onTap = () => {
     say(pool[Math.floor(Math.random() * pool.length)], true);
   }
 };
+
+/* Béo's idle chatter: Hanoi/HCMC weather, asking for snacks or playtime (talk only) */
+function wxCached(key) {
+  try { const c = JSON.parse(localStorage.getItem(key) || 'null'); if (c && Date.now() - c.t < 30 * 60 * 1000) return c.d; } catch (e) {}
+  return null;
+}
+function wxQuip(d, who) {
+  const t = parseFloat(d.t);
+  if (/mưa|giông/i.test(d.desc)) return who + ' ra đường nhớ mang ô nha~';
+  if (t >= 34) return 'Nóng chảy mỡ luôn~ ' + who + ' uống nước nhiều nhiều nha~';
+  if (t <= 18) return 'Hơi se lạnh đó, ' + who + ' mặc ấm vào nha~';
+  if (/nắng|quang/i.test(d.desc)) return 'Trời đẹp quá à, muốn ra cỏ lăn lộn~';
+  return 'Hôm nay trời ổn áp đó~';
+}
+function wxLine(which) {
+  const isHN = which === 'hn';
+  const city = isHN ? 'Hà Nội' : 'Sài Gòn';
+  const who = isHN ? 'Chị' : 'Ông già';
+  const d = wxCached(isHN ? 'wx' : 'wx_hcm');
+  if (!d) return city + ' hôm nay sao ta~ con chưa ngó được, chị xem giúp con nha~';
+  return city + ' hôm nay ' + d.t + '°C, ' + d.desc + ' đó~ ' + wxQuip(d, who);
+}
+const BEO_CHATTER = [
+  () => wxLine('hn'),
+  () => wxLine('hcm'),
+  'Chị ơi~ bụng con kêu rột rột rồi nè, cho con miếng tre đi mà~',
+  'Con đói meo rồi chị ơi~ bát tre của con đâu mất tiêu rồi~',
+  'Ước gì có ai đút tre cho con ăn~ chị đút cho con nha~',
+  'Con thèm tre quá đi~ nhai rộp rộp mới đã cái nư~',
+  'Chơi bóng với con đi chị~ con hứa lần này đá trúng~',
+  'Chị ơi chơi với con đi mà~ con lăn một vòng cho chị xem nè~',
+  'Buồn quá à~ có ai đá bóng với Béo không~',
+  'Con muốn chơi~ chị kéo quả bóng lại cho con đá nha~'
+];
+function beoChatter() {
+  if (unlocked && !subtitleBusy && !document.hidden && $('scr-home').classList.contains('on')) {
+    const line = BEO_CHATTER[Math.floor(Math.random() * BEO_CHATTER.length)];
+    say(typeof line === 'function' ? line() : line, true);
+  }
+  setTimeout(beoChatter, 60000 + Math.random() * 60000);
+}
+window.__beoSay = (i) => { const line = BEO_CHATTER[i % BEO_CHATTER.length]; const text = typeof line === 'function' ? line() : line; say(text, true); return text; };
 
 /* ---------- router ---------- */
 const screens = ['scr-lock', 'passcode', 'scr-home', 'scr-book', 'scr-memory'];
@@ -1899,14 +2445,36 @@ tickLock(); setInterval(tickLock, 10000);
 let swY = null;
 const lockEl = $('scr-lock');
 function swipeUp() { SFX.tap(); show('passcode'); sizePattern(); }
-lockEl.addEventListener('touchstart', e => { swY = e.touches[0].clientY; }, { passive: true });
-lockEl.addEventListener('touchend', e => {
+function lockSwipeMove(y) {
   if (swY == null) return;
-  const dy = e.changedTouches[0].clientY - swY; swY = null;
-  if (dy < -60) swipeUp();
-}, { passive: true });
-lockEl.addEventListener('mousedown', e => { swY = e.clientY; });
-lockEl.addEventListener('mouseup', e => { if (swY != null && e.clientY - swY < -60) swipeUp(); swY = null; });
+  const d = Math.max(-170, Math.min(30, (y - swY) * 0.45)); /* rubber-band follow */
+  lockEl.style.transform = 'translateY(' + d + 'px)';
+  lockEl.style.opacity = String(1 + d / 500);
+}
+function lockSwipeEnd(y, cancelled) {
+  if (swY == null) return;
+  const dy = cancelled ? 0 : y - swY; swY = null;
+  lockEl.classList.remove('swiping');
+  if (dy < -60) {
+    /* fling up: slide the lock screen away, then open passcode */
+    lockEl.style.transition = 'transform .36s ease-in, opacity .36s ease-in';
+    lockEl.style.transform = 'translateY(-68%)';
+    lockEl.style.opacity = '0';
+    setTimeout(() => { swipeUp(); lockEl.style.transition = ''; lockEl.style.transform = ''; lockEl.style.opacity = ''; }, 340);
+  } else {
+    /* spring back */
+    lockEl.style.transition = 'transform .32s var(--spring), opacity .32s';
+    lockEl.style.transform = ''; lockEl.style.opacity = '';
+    setTimeout(() => { lockEl.style.transition = ''; }, 340);
+  }
+}
+lockEl.addEventListener('touchstart', e => { swY = e.touches[0].clientY; lockEl.classList.add('swiping'); }, { passive: true });
+lockEl.addEventListener('touchmove', e => { lockSwipeMove(e.touches[0].clientY); }, { passive: true });
+lockEl.addEventListener('touchend', e => { lockSwipeEnd(e.changedTouches[0].clientY, false); }, { passive: true });
+lockEl.addEventListener('touchcancel', () => { lockSwipeEnd(0, true); }, { passive: true });
+lockEl.addEventListener('mousedown', e => { swY = e.clientY; lockEl.classList.add('swiping'); });
+lockEl.addEventListener('mousemove', e => { lockSwipeMove(e.clientY); });
+lockEl.addEventListener('mouseup', e => { lockSwipeEnd(e.clientY, false); });
 
 /* ---------- passcode ---------- */
 let method = 'pin';
@@ -2004,7 +2572,6 @@ pc.addEventListener('pointerup', () => {
 pc.addEventListener('pointercancel', () => { patDown = false; });
 
 /* ---------- unlock: the sky brightens, the panda wakes ---------- */
-let unlocked = false;
 async function doUnlock() {
   if (unlocked) return; unlocked = true;
   SFX.unlock();
@@ -2013,7 +2580,8 @@ async function doUnlock() {
   if (window.Scene) window.Scene.setDay(1);
   window.Panda.sleep(false);
   initHome();
-  await say('Cô mở được rồi! Con tỉnh rồi nè ♥ Con là Béo, linh vật của hai người — để con kể cô nghe câu chuyện của chúng mình. Ở trên là đồng hồ đếm từng giây phút hai người yêu nhau, menu bên cạnh có sách với kỉ niệm, cô chọn đi~');
+  await say('Chị mở được rồi! Con tỉnh rồi nè ♥ Con là Béo, linh vật của hai người — để con kể chị nghe câu chuyện của chúng mình. Ở trên là đồng hồ đếm từng giây phút hai người yêu nhau, menu bên cạnh có sách với kỉ niệm, chị chọn đi~');
+  setTimeout(beoChatter, 45000);
 }
 
 /* ---------- home ---------- */
@@ -2025,7 +2593,7 @@ function initHome() {
   $('greetBubble').textContent = g;
   updateSoundIcon();
   startLoveTimer();
-  loadWeather();
+  loadWeather(); loadWeatherHCM();
 }
 $('soundToggle').addEventListener('click', () => {
   const muted = SFX.toggle();
@@ -2074,6 +2642,20 @@ async function loadWeather() {
   } catch (e) { chip.innerHTML = '<span class="ic">📍</span><span>Hà Nội · --°C</span>'; }
 }
 function renderWx(chip, d) { chip.innerHTML = '<span class="ic">' + d.icon + '</span><span>Hà Nội · ' + d.t + '°C · ' + d.desc + '</span>'; }
+async function loadWeatherHCM() {
+  try {
+    const cached = JSON.parse(localStorage.getItem('wx_hcm') || 'null');
+    if (cached && Date.now() - cached.t < 30 * 60 * 1000) return;
+    const ctl = new AbortController();
+    const to = setTimeout(() => ctl.abort(), 8000);
+    const r = await fetch('https://wttr.in/HoChiMinh?format=j1', { signal: ctl.signal });
+    clearTimeout(to);
+    const j = await r.json();
+    const cur = j.current_condition[0];
+    const d = { t: cur.temp_C, desc: WX_VI[cur.weatherDesc[0].value] || cur.weatherDesc[0].value, icon: wxIcon(cur.weatherCode) };
+    localStorage.setItem('wx_hcm', JSON.stringify({ t: Date.now(), d }));
+  } catch (e) {}
+}
 
 /* ---------- book: 3D storybook ---------- */
 function typewrite(el, text, speed, cb) {
@@ -2107,7 +2689,7 @@ function goBook() {
   SFX.tap();
   resetBook();
   show('scr-book');
-  say('Chương 1: Cuốn sách bí mật. Anh ấy đã viết tay từng chữ đấy — cô mở bìa ra xem đi~', true);
+  say('Chương 1: Cuốn sách bí mật. Ông già đã viết tay từng chữ đấy — chị mở bìa ra xem đi~', true);
 }
 $('bookCover').addEventListener('click', () => {
   if (bookStage !== 0) return;
@@ -2141,7 +2723,7 @@ function setupTear() {
       paper.style.transform = 'translateX(' + (dx > 0 ? 320 : -320) + 'px) rotate(' + (dx > 0 ? 18 : -18) + 'deg)';
       paper.style.opacity = '0';
       setTimeout(() => { paper.style.display = 'none'; renderCounter(); }, 380);
-      say('Hehe, cô xé rách rồi kìa~', true);
+      say('Hehe, chị xé rách rồi kìa~', true);
     } else {
       paper.style.transition = 'transform .3s,opacity .3s';
       paper.style.transform = 'translateX(0) rotate(0)'; paper.style.opacity = '1';
@@ -2175,7 +2757,7 @@ $('bookNext').addEventListener('click', () => {
         $('photoFrame').classList.add('show');
         SFX.chime();
         $('bookHome').style.display = '';
-        setTimeout(() => { window.Panda.wave(); say('Trong đầu ổng chỉ có mỗi cô thôi đó~', true); }, 1100);
+        setTimeout(() => { window.Panda.wave(); say('Trong đầu ông già chỉ có mỗi chị thôi đó~', true); }, 1100);
       });
     });
   }, 1050);
@@ -2252,7 +2834,7 @@ $('feedBtn').addEventListener('click', () => {
   if (now - feedCool < 5000) { toast('đợi bé ăn xong đã nhé~'); return; }
   feedCool = now;
   SFX.pop();
-  if (window.Panda.feed()) say('Ngoàm ngoàm~ ngon quá đi cô ơi!', true);
+  if (window.Panda.feed()) say('Ngoàm ngoàm~ ngon quá đi chị ơi!', true);
 });
 $('playBtn').addEventListener('click', () => {
   const now = Date.now();
@@ -2260,9 +2842,24 @@ $('playBtn').addEventListener('click', () => {
   playCool = now;
   if (window.Panda.play()) say('Chơi bóng với con nè!', true);
 });
+let liftOn = false;
+$('modeBtn').addEventListener('click', () => {
+  SFX.tap();
+  liftOn = !liftOn;
+  if (window.Scene) window.Scene.setLiftMode(liftOn);
+  $('modeBtn').classList.toggle('active', liftOn);
+  $('icoLift').style.display = liftOn ? 'none' : '';
+  $('icoCam').style.display = liftOn ? '' : 'none';
+  $('modeTip').textContent = liftOn ? 'Chế độ camera' : 'Chế độ nhấc';
+  $('modeBtn').setAttribute('aria-label', liftOn ? 'Chế độ camera' : 'Chế độ nhấc');
+  if (liftOn && !subtitleBusy && unlocked) say('Chế độ nhấc nè~ camera đứng yên rồi, chị kéo Béo, kéo bóng, kéo tre thoải mái nha~', true);
+  else if (!subtitleBusy && unlocked) say('Về chế độ camera~ chị kéo để xoay ngắm cảnh nha~', true);
+});
 let followOn = false;
+if (IS_MOBILE) { followOn = true; $('focusBtn').classList.add('active'); }
 $('focusBtn').addEventListener('click', () => {
   SFX.tap();
+  if (IS_MOBILE) return; /* mobile: camera always locked on Beo */
   followOn = !followOn;
   $('focusBtn').classList.toggle('active', followOn);
   if (window.Scene) window.Scene.setFollow(followOn);
