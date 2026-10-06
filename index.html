@@ -18,12 +18,13 @@
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 [hidden]{display:none!important}
-html,body{width:100%;height:100%;overflow:hidden;background:#070a1d;color:var(--ink);
-  font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,sans-serif;user-select:none;-webkit-user-select:none}
-button{font-family:inherit;border:none;background:none;color:inherit;cursor:pointer}
+html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#070a1d;color:var(--ink);
+  font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,sans-serif;user-select:none;-webkit-user-select:none;
+  overscroll-behavior:none;position:fixed;inset:0}
+button{font-family:inherit;border:none;background:none;color:inherit;cursor:pointer;touch-action:manipulation}
 
 /* ---------- 3D backdrop ---------- */
-#gl{position:fixed;inset:0;z-index:0;display:block}
+#gl{position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block;touch-action:none}
 #vignette{position:fixed;inset:0;z-index:1;pointer-events:none;
   background:radial-gradient(ellipse at 50% 42%,transparent 52%,rgba(4,6,18,.62) 100%)}
 
@@ -34,7 +35,7 @@ button{font-family:inherit;border:none;background:none;color:inherit;cursor:poin
   transition:opacity .55s var(--spring),transform .55s var(--spring),filter .55s var(--spring)}
 .screen.on{opacity:1;transform:none;filter:none}
 /* taps pass through empty areas to the panda; interactive children opt back in */
-.screen.on button,.screen.on input,.screen.on a,.screen.on .nav-card,.screen.on .fab,.screen.on .icon-btn,
+.screen.on button,.screen.on input,.screen.on a,.screen.on .nav-card,.screen.on .dock-btn,.screen.on .icon-btn,
 .screen.on .memory-lane,.screen.on .tear-zone,.screen.on #patternCanvas,.screen.on #subtitle{pointer-events:auto}
 #scr-lock.on{pointer-events:auto}
 #scr-book.takeover.on{pointer-events:auto;background:rgba(4,6,18,.66);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
@@ -97,34 +98,61 @@ button{font-family:inherit;border:none;background:none;color:inherit;cursor:poin
   backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
 .weather-chip .ic{font-size:16px}
 .icon-btn{width:36px;height:36px;border-radius:50%;background:var(--glass);border:1px solid var(--glass-brd);
-  font-size:16px;display:grid;place-items:center;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+  font-size:16px;display:grid;place-items:center;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);color:#fff}
+.icon-btn svg{width:18px;height:18px}
 .icon-btn:active{transform:scale(.9)}
-.hud-bottom{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);z-index:15;
-  display:flex;justify-content:space-between;padding:0 16px;pointer-events:none}
-.hud-bottom .fab{pointer-events:auto}
-.fab{width:76px;height:76px;border-radius:26px;background:var(--glass);border:1px solid var(--glass-brd);
-  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:3px;box-shadow:0 12px 32px rgba(0,0,0,.4);
-  transition:transform .18s var(--spring)}
-.fab:active{transform:scale(.9)}
-.fab .em{font-size:27px}
-.fab .lb{font-size:11px;font-weight:700;color:var(--ink-dim)}
+/* ---------- side dock (game menu) ---------- */
+.side-dock{position:absolute;right:12px;top:50%;transform:translateY(-50%);z-index:15;
+  display:flex;flex-direction:column;gap:10px;pointer-events:none}
+.side-dock::before{content:'';position:absolute;left:50%;top:-14px;bottom:-14px;width:1px;transform:translateX(-50%);
+  background:linear-gradient(180deg,transparent,rgba(255,255,255,.14) 20%,rgba(255,255,255,.14) 80%,transparent)}
+.dock-btn{pointer-events:auto;position:relative;width:56px;height:56px;border-radius:19px;display:grid;place-items:center;
+  color:#eef1ff;background:linear-gradient(160deg,rgba(34,41,78,.78),rgba(13,17,36,.78));
+  border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  box-shadow:0 12px 28px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.14);
+  transition:transform .22s var(--spring),border-color .25s,color .25s,box-shadow .25s;
+  opacity:0;animation:dockIn .55s var(--pop) forwards}
+.side-dock .dock-btn:nth-child(1){animation-delay:.10s}
+.side-dock .dock-btn:nth-child(2){animation-delay:.18s}
+.side-dock .dock-btn:nth-child(3){animation-delay:.26s}
+.side-dock .dock-btn:nth-child(4){animation-delay:.34s}
+.side-dock .dock-btn:nth-child(5){animation-delay:.42s}
+@keyframes dockIn{from{opacity:0;transform:translateX(30px) scale(.85)}to{opacity:1;transform:none}}
+.dock-btn svg{width:24px;height:24px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.35))}
+.dock-btn:hover{transform:translateX(-5px);border-color:rgba(255,255,255,.32)}
+.dock-btn:active{transform:scale(.88)}
+.dock-btn.active{border-color:var(--accent);color:var(--accent-soft);
+  box-shadow:0 0 0 1.5px var(--accent),0 12px 28px rgba(0,0,0,.5),0 0 26px rgba(255,143,163,.4)}
+.dock-btn .tip{position:absolute;right:calc(100% + 12px);top:50%;transform:translateY(-50%) translateX(8px);
+  background:rgba(12,16,34,.94);border:1px solid var(--glass-brd);padding:7px 13px;border-radius:11px;
+  font-size:12.5px;font-weight:700;white-space:nowrap;color:#fff;opacity:0;pointer-events:none;
+  transition:opacity .22s,transform .22s var(--spring);box-shadow:0 8px 20px rgba(0,0,0,.4)}
+.dock-btn:hover .tip,.dock-btn.active .tip{opacity:1;transform:translateY(-50%)}
 @keyframes rise{from{opacity:0;transform:translateY(18px)}}
 
 /* ---------- subtitle (game-style dialogue) ---------- */
-#subtitle{position:absolute;left:14px;right:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 104px);z-index:30;
-  background:rgba(10,14,34,.86);border:1px solid var(--glass-brd);border-radius:18px;padding:12px 14px 16px;
-  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 18px 44px rgba(0,0,0,.5);
-  opacity:0;transform:translateY(18px);pointer-events:none;transition:all .35s var(--spring)}
+/* ---------- subtitle: genshin-style dialogue ---------- */
+#subtitle{position:absolute;left:14px;right:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 20px);z-index:30;
+  background:linear-gradient(180deg,rgba(20,26,52,.93),rgba(9,12,27,.97));
+  border:1px solid rgba(201,168,106,.5);border-radius:14px;padding:28px 22px 20px;
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  box-shadow:0 22px 55px rgba(0,0,0,.6),inset 0 0 0 1px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.07);
+  opacity:0;transform:translateY(26px);pointer-events:none;transition:opacity .38s ease,transform .45s var(--spring)}
 #subtitle.on{opacity:1;transform:none;pointer-events:auto}
-.sub-head{display:flex;align-items:center;gap:8px;margin-bottom:5px}
-.sub-avatar{width:30px;height:30px;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:18px;
-  box-shadow:0 2px 8px rgba(0,0,0,.25);animation:narrBob 2.4s ease-in-out infinite}
-@keyframes narrBob{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-3px) rotate(4deg)}}
-.sub-name{font-size:11px;font-weight:800;letter-spacing:.14em;color:var(--accent-soft)}
-.sub-text{font-size:14.5px;line-height:1.62;min-height:46px;color:#fff}
-.sub-next{position:absolute;right:14px;bottom:8px;font-size:12px;color:var(--accent-soft);animation:bob 1.2s ease-in-out infinite}
-@keyframes bob{0%,100%{transform:translateY(0);opacity:.6}50%{transform:translateY(4px);opacity:1}}
+#subtitle::before,#subtitle::after{content:'';position:absolute;width:20px;height:20px;border:2px solid #c9a86a;opacity:.85;pointer-events:none}
+#subtitle::before{top:7px;left:7px;border-right:none;border-bottom:none;border-radius:9px 0 0 0}
+#subtitle::after{bottom:7px;right:7px;border-left:none;border-top:none;border-radius:0 0 9px 0}
+.sub-nameplate{position:absolute;top:-16px;left:24px;display:flex;align-items:center;gap:9px;
+  background:linear-gradient(180deg,#2b3460,#161c38);border:1px solid #c9a86a;border-radius:10px;
+  padding:5px 16px 5px 7px;font-size:11px;font-weight:800;letter-spacing:.2em;color:#f2e6c8;
+  box-shadow:0 8px 18px rgba(0,0,0,.45)}
+.sub-panda{width:26px;height:26px;border-radius:50%;background:#fdfbf6;display:grid;place-items:center;overflow:hidden;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.sub-panda svg{width:24px;height:24px}
+.sub-text{font-size:15px;line-height:1.75;min-height:52px;color:#f5f2e9;text-shadow:0 1px 3px rgba(0,0,0,.55)}
+.sub-next{position:absolute;right:18px;bottom:10px;font-size:13px;color:#c9a86a;animation:subBob 1.3s ease-in-out infinite;
+  text-shadow:0 0 8px rgba(201,168,106,.6)}
+@keyframes subBob{0%,100%{transform:translateY(0);opacity:.55}50%{transform:translateY(5px);opacity:1}}
 
 /* ---------- book (3D storybook takeover) ---------- */
 #scr-book{justify-content:center}
@@ -154,10 +182,19 @@ button{font-family:inherit;border:none;background:none;color:inherit;cursor:poin
   font-size:13px;color:#7a6244;touch-action:none;user-select:none;-webkit-user-select:none}
 .tear-paper{background:#fffdf6;border-radius:8px;padding:10px;box-shadow:0 4px 14px rgba(0,0,0,.12);
   transform-origin:top center;will-change:transform;touch-action:none}
+.tear-stub{display:none;height:16px;margin:2px 8px 0;background:#fffdf6;
+  clip-path:polygon(0 0,100% 0,100% 32%,95% 78%,90% 28%,85% 82%,80% 34%,75% 72%,70% 26%,65% 80%,60% 30%,55% 74%,50% 26%,45% 78%,40% 30%,35% 72%,30% 24%,25% 76%,20% 30%,15% 70%,10% 26%,5% 74%,0% 32%);
+  filter:drop-shadow(0 2px 3px rgba(0,0,0,.1))}
 .b-flip{position:absolute;top:0;bottom:0;left:50%;width:50%;z-index:5;transform-origin:left center;
-  background:linear-gradient(105deg,#fbf7ec,#f1e8d2);border-radius:4px 16px 16px 4px;
-  box-shadow:0 10px 30px rgba(0,0,0,.35)}
-.b-flip.go{transition:transform 1s cubic-bezier(.5,.05,.3,1);transform:rotateY(-180deg)}
+  transform-style:preserve-3d;-webkit-transform-style:preserve-3d}
+.b-flip.go{transition:transform 1.15s cubic-bezier(.55,.06,.35,1);transform:rotateY(-180deg)}
+.flip-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  padding:22px 18px;overflow:hidden;color:#4a3b28;font-family:'Patrick Hand',cursive}
+.flip-front{background:linear-gradient(105deg,#fbf7ec,#f1e8d2);border-radius:4px 16px 16px 4px;
+  box-shadow:0 14px 34px rgba(0,0,0,.35)}
+.flip-back{transform:rotateY(180deg);border-radius:16px 4px 4px 16px;
+  background:linear-gradient(255deg,#fbf7ec,#eee3cb)}
+.flip-lines{background-image:repeating-linear-gradient(180deg,transparent 0 26px,rgba(120,90,50,.13) 26px 27px)}
 .polaroid{background:#fff;border-radius:6px;padding:10px 10px 8px;margin-top:12px;transform:rotate(-2.5deg) scale(.9);
   box-shadow:0 14px 34px rgba(0,0,0,.3);opacity:0;transition:all .8s var(--pop);position:relative}
 .polaroid.show{opacity:1;transform:rotate(-2.5deg) scale(1)}
@@ -283,15 +320,36 @@ button{font-family:inherit;border:none;background:none;color:inherit;cursor:poin
     </div>
     <div class="hud-row">
       <div class="weather-chip" id="weatherChip"><span class="ic">…</span><span>đang xem thời tiết</span></div>
-      <button class="icon-btn" id="soundToggle" aria-label="bật tắt âm thanh">🔊</button>
+      <button class="icon-btn" id="soundToggle" aria-label="bật tắt âm thanh">
+        <svg id="sndOn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4z" fill="currentColor" stroke="none"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9.5 9.5 0 0 1 0 13"/></svg>
+        <svg id="sndOff" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M11 5 6 9H2v6h4l5 4z" fill="currentColor" stroke="none"/><path d="M22 9l-6 6M16 9l6 6"/></svg>
+      </button>
     </div>
   </div>
-  <div class="hud-bottom">
-    <button class="fab" id="goBook"><span class="em">📖</span><span class="lb">Cuốn sách</span></button>
-    <button class="fab" id="goMemory"><span class="em">🖼️</span><span class="lb">Kỉ niệm</span></button>
-  </div>
+  <nav class="side-dock" id="sideDock" aria-label="menu chính">
+    <button class="dock-btn" id="goBook" aria-label="Cuốn sách">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/></svg>
+      <span class="tip">Cuốn sách</span>
+    </button>
+    <button class="dock-btn" id="feedBtn" aria-label="Cho ăn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21v-9"/><path d="M12 12C12 8 9 5 4 5c0 4 3 7 8 7z"/><path d="M12 12c0-4 3-7 8-7 0 4-3 7-8 7z"/></svg>
+      <span class="tip">Cho ăn</span>
+    </button>
+    <button class="dock-btn" id="focusBtn" aria-label="Zoom vào bé">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+      <span class="tip">Zoom vào bé</span>
+    </button>
+    <button class="dock-btn" id="playBtn" aria-label="Chơi bóng">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v18"/><path d="M5.5 6.5c3.5 2 5.5 4.5 5.5 8.5"/><path d="M18.5 6.5c-3.5 2-5.5 4.5-5.5 8.5"/></svg>
+      <span class="tip">Chơi bóng</span>
+    </button>
+    <button class="dock-btn" id="goMemory" aria-label="Kỉ niệm">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.6"/><path d="M21 15.5l-5-5L5 21"/></svg>
+      <span class="tip">Kỉ niệm</span>
+    </button>
+  </nav>
   <div id="subtitle" aria-hidden="true">
-    <div class="sub-head"><span class="sub-avatar">🐼</span><span class="sub-name">GẤU TRÚC</span></div>
+    <div class="sub-nameplate"><span class="sub-panda"><svg viewBox="0 0 32 32"><circle cx="7.5" cy="8.5" r="4.6" fill="#232228"/><circle cx="24.5" cy="8.5" r="4.6" fill="#232228"/><circle cx="16" cy="17" r="11" fill="#fdfbf6"/><ellipse cx="11.6" cy="15.2" rx="3" ry="3.9" fill="#232228"/><ellipse cx="20.4" cy="15.2" rx="3" ry="3.9" fill="#232228"/><circle cx="12.6" cy="14" r="1.15" fill="#fff"/><circle cx="21.4" cy="14" r="1.15" fill="#fff"/><ellipse cx="16" cy="21.4" rx="2.1" ry="1.5" fill="#232228"/><path d="M16 22.8c-1 1.2-2.6 1.4-3.8.8" stroke="#232228" stroke-width="1.1" fill="none" stroke-linecap="round"/></svg></span><span>BÉO</span></div>
     <div class="sub-text" id="subText"></div>
     <div class="sub-next">▼</div>
   </div>
@@ -312,7 +370,7 @@ button{font-family:inherit;border:none;background:none;color:inherit;cursor:poin
       </div>
       <div class="b-spread" id="spread1">
         <div class="b-page b-left"><div class="pg" id="bookText"></div>
-          <div class="tear-zone" id="tearZone" style="display:none"><div class="tear-paper" id="tearPaper">kéo để xé ↓</div></div>
+          <div class="tear-zone" id="tearZone" style="display:none"><div class="tear-stub" id="tearStub" style="display:none"></div><div class="tear-paper" id="tearPaper">kéo xuống để xé ↓</div></div>
         </div>
         <div class="b-page b-right"><div class="pg" id="bookCounter"></div></div>
       </div>
@@ -322,7 +380,10 @@ button{font-family:inherit;border:none;background:none;color:inherit;cursor:poin
           <div class="polaroid" id="photoFrame"><img src="photo.jpg" alt="hai đứa mình"><div class="pol-cap">trong đầu ổng 🖼️</div></div>
         </div>
       </div>
-      <div class="b-flip" id="bookFlip" hidden></div>
+      <div class="b-flip" id="bookFlip" hidden>
+        <div class="flip-face flip-front"><div class="pg" id="flipFrontText"></div></div>
+        <div class="flip-face flip-back flip-lines"></div>
+      </div>
     </div>
     <div class="book-nav">
       <button class="chip-btn" id="bookBack">‹ quay lại</button>
@@ -363,7 +424,7 @@ button{font-family:inherit;border:none;background:none;color:inherit;cursor:poin
   <p>Vui lắm nha!<br>Ôm một cái thật chặt nào ♥</p>
 </div></div>
 
-<div class="panda-tap-hint" id="pandaHint">chạm vào gấu trúc · kéo để xoay</div>
+<div class="panda-tap-hint" id="pandaHint">chạm đất để bé đi tới · chạm bé để nựng · kéo để xoay</div>
 <div id="toast"></div>
 <div id="loader"><div class="t">đang chuẩn bị điều bất ngờ…</div></div>
 <script>
@@ -391,27 +452,46 @@ setTimeout(function () {
   }
 }, 25000);
 (function () {
+  /* Trình duyệt quá cũ (không hỗ trợ importmap) thì báo rõ */
+  if (!(window.HTMLScriptElement && HTMLScriptElement.supports && HTMLScriptElement.supports('importmap'))) {
+    __showError('trình duyệt quá cũ — hãy mở bằng Chrome/Safari mới nhé');
+    return;
+  }
   var bases = ['https://cdn.jsdelivr.net/npm/three@0.169.0', 'https://unpkg.com/three@0.169.0'];
-  function probe(base) {
-    return new Promise(function (resolve) {
-      var done = false;
-      var timer = setTimeout(function () { if (!done) { done = true; resolve(false); } }, 7000);
-      fetch(base + '/build/three.module.js', { method: 'HEAD', mode: 'no-cors', cache: 'no-store' })
-        .then(function () { if (!done) { done = true; clearTimeout(timer); resolve(true); } })
-        .catch(function () { if (!done) { done = true; clearTimeout(timer); resolve(false); } });
+  function fetchText(url, ms) {
+    return new Promise(function (resolve, reject) {
+      var to = setTimeout(function () { reject(new Error('timeout')); }, ms || 15000);
+      fetch(url, { mode: 'cors', cache: 'force-cache' }).then(function (r) {
+        if (!r.ok) { clearTimeout(to); reject(new Error('HTTP ' + r.status)); return; }
+        r.text().then(function (t) { clearTimeout(to); resolve(t); }, function (e) { clearTimeout(to); reject(e); });
+      }, function (e) { clearTimeout(to); reject(e); });
     });
   }
+  /* Từ chối trang HTML chặn mạng / captive portal đội lốt file JS */
+  function looksLikeJS(t) {
+    var head = t.replace(/^\s+/, '').slice(0, 120).toLowerCase();
+    if (!head) return false;
+    if (head.charAt(0) === '<') return false;
+    return true;
+  }
   (async function () {
-    var base = null;
-    for (var i = 0; i < bases.length; i++) {
-      try { if (await probe(bases[i])) { base = bases[i]; break; } } catch (e) {}
+    var threeURL = null, addonURL = null;
+    for (var i = 0; i < bases.length && !threeURL; i++) {
+      try {
+        var core = await fetchText(bases[i] + '/build/three.module.js');
+        var addon = await fetchText(bases[i] + '/examples/jsm/utils/BufferGeometryUtils.js');
+        if (!looksLikeJS(core) || !looksLikeJS(addon)) continue;
+        threeURL = URL.createObjectURL(new Blob([core], { type: 'text/javascript' }));
+        var patched = addon.replace(/from\s+['"]three['"]/g, "from '" + threeURL + "'");
+        addonURL = URL.createObjectURL(new Blob([patched], { type: 'text/javascript' }));
+      } catch (e) { /* thử CDN tiếp theo */ }
     }
-    if (!base) { __showError('không kết nối được CDN — kiểm tra mạng nhé'); return; }
+    if (!threeURL) { __showError('không tải được thư viện 3D — kiểm tra mạng rồi tải lại trang nhé'); return; }
     var im = document.createElement('script');
     im.type = 'importmap';
     im.textContent = JSON.stringify({ imports: {
-      'three': base + '/build/three.module.js',
-      'three/addons/': base + '/examples/jsm/'
+      'three': threeURL,
+      'three/addons/utils/BufferGeometryUtils.js': addonURL
     }});
     document.head.appendChild(im);
     var getSrc = function (cb) {
@@ -423,21 +503,38 @@ setTimeout(function () {
       var mod = document.createElement('script');
       mod.type = 'module';
       mod.src = URL.createObjectURL(new Blob([src], { type: 'text/javascript' }));
-      mod.onerror = function () { __showError('không tải được module three.js'); };
+      mod.onerror = function () { __showError('không chạy được module 3D'); };
       document.body.appendChild(mod);
     });
   })();
 })();
 </script>
+/* ---------- small screens ---------- */
+@media (max-width:360px){
+  .side-dock{right:8px;gap:8px}
+  .dock-btn{width:48px;height:48px;border-radius:16px}
+  .dock-btn svg{width:21px;height:21px}
+  .lock-clock{font-size:68px}
+  #subtitle{left:10px;right:10px;padding:24px 16px 16px}
+  .sub-text{font-size:13.5px}
+  .greet{font-size:13px;padding:8px 16px}
+  .lovetimer{font-size:15px}
+  .b-page{padding:22px 20px;font-size:14px}
+}
+
 <script type="app-src" id="app-src">
+
+
+
 /*__APP1__*/
 import * as THREE from 'three';
 import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 
 const canvas = document.getElementById('gl');
 const loaderEl = document.getElementById('loader');
+const IS_MOBILE = (window.matchMedia && matchMedia('(pointer: coarse)').matches) || /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent || '');
 
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: !IS_MOBILE, powerPreference: 'high-performance' });
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -451,20 +548,19 @@ const NIGHT = {
   fog: new THREE.Color(0x0a0f28), moon: new THREE.Color(0xbcd0ff), hemiSky: new THREE.Color(0x33406e)
 };
 const DAY = {
-  skyTop: new THREE.Color(0x3d7cc4), skyMid: new THREE.Color(0x8ab8e6), skyBot: new THREE.Color(0xd9ecf8),
-  fog: new THREE.Color(0xbcd6ea), sun: new THREE.Color(0xfff1d6), hemiSky: new THREE.Color(0xbdd7f2)
+  skyTop: new THREE.Color(0x4a90e2), skyMid: new THREE.Color(0x9ccbf2), skyBot: new THREE.Color(0xeaf6fd),
+  fog: new THREE.Color(0xc9e2f4), sun: new THREE.Color(0xfff6dc), hemiSky: new THREE.Color(0xcfe4fa)
 };
 const dayState = { k: 0, target: 0 };
 scene.fog = new THREE.Fog(NIGHT.fog.clone(), 30, 115);
 renderer.setClearColor(NIGHT.fog.clone(), 1);
 
-/* lights */
 const moonDir = new THREE.Vector3(-0.45, 0.55, 0.4).normalize();
 const sunDir = new THREE.Vector3(0.4, 0.62, 0.35).normalize();
 const moon = new THREE.DirectionalLight(NIGHT.moon.clone(), 1.15);
 moon.position.copy(moonDir).multiplyScalar(45);
 moon.castShadow = true;
-moon.shadow.mapSize.set(1024, 1024);
+moon.shadow.mapSize.set(IS_MOBILE ? 512 : 1024, IS_MOBILE ? 512 : 1024);
 moon.shadow.camera.left = -26; moon.shadow.camera.right = 26;
 moon.shadow.camera.top = 26; moon.shadow.camera.bottom = -26;
 moon.shadow.camera.near = 1; moon.shadow.camera.far = 120;
@@ -476,7 +572,7 @@ const lantern = new THREE.PointLight(0xffb37a, 9, 25, 1.8);
 lantern.position.set(3.2, 2.4, 3.5);
 scene.add(lantern);
 
-/* sky dome with day/night blend */
+/* sky dome */
 const skyMat = new THREE.ShaderMaterial({
   side: THREE.BackSide, depthWrite: false, fog: false,
   uniforms: {
@@ -515,7 +611,7 @@ const skyMat = new THREE.ShaderMaterial({
 });
 scene.add(new THREE.Mesh(new THREE.SphereGeometry(400, 32, 16), skyMat));
 
-/* stars (fade out by day) */
+/* stars */
 let starsMat;
 {
   const n = 300, pos = new Float32Array(n * 3);
@@ -552,7 +648,15 @@ ground.rotation.x = -Math.PI / 2;
 ground.receiveShadow = true;
 scene.add(ground);
 
-/* grass (denser, day/night tint) */
+/* soft playground rug */
+{
+  const rug = new THREE.Mesh(new THREE.CircleGeometry(10.6, 48),
+    new THREE.MeshLambertMaterial({ color: 0x2a4a2e, transparent: true, opacity: 0.55 }));
+  rug.rotation.x = -Math.PI / 2; rug.position.y = 0.02; rug.receiveShadow = true;
+  scene.add(rug);
+}
+
+/* grass */
 const grassUniforms = { uTime: { value: 0 }, uDay: { value: 0 }, uMoonTint: { value: new THREE.Color(0x8fa8ff) } };
 {
   const blade = new THREE.PlaneGeometry(0.07, 1, 1, 2);
@@ -575,7 +679,7 @@ const grassUniforms = { uTime: { value: 0 }, uDay: { value: 0 }, uMoonTint: { va
       'uniform vec3 uMoonTint;', 'uniform float uDay;', 'varying float vY;', 'varying float vPh;', '#include <fog_pars_fragment>',
       'void main(){',
       '  vec3 nBase = vec3(0.05, 0.12, 0.06);', '  vec3 nTip = vec3(0.16, 0.30, 0.14);',
-      '  vec3 dBase = vec3(0.15, 0.34, 0.15);', '  vec3 dTip = vec3(0.45, 0.72, 0.34);',
+      '  vec3 dBase = vec3(0.18, 0.42, 0.18);', '  vec3 dTip = vec3(0.52, 0.80, 0.38);',
       '  vec3 base = mix(nBase, dBase, uDay);', '  vec3 tip = mix(nTip, dTip, uDay);',
       '  vec3 col = mix(base, tip, vY) * (0.75 + 0.5 * vPh);',
       '  col += uMoonTint * vY * 0.10 * (1.0 - uDay);',
@@ -583,12 +687,19 @@ const grassUniforms = { uTime: { value: 0 }, uDay: { value: 0 }, uMoonTint: { va
       '#include <colorspace_fragment>', '#include <fog_fragment>', '}'
     ].join('\n')
   });
-  const COUNT = 3600;
+  const COUNT = IS_MOBILE ? 2000 : 3600;
   const grass = new THREE.InstancedMesh(blade, grassMat, COUNT);
   const dummy = new THREE.Object3D();
   for (let i = 0; i < COUNT; i++) {
     const r = 1.6 + Math.pow(Math.random(), 0.6) * 24;
     const a = Math.random() * Math.PI * 2;
+    if (r < 11.5 && Math.random() < 0.8) {
+      dummy.position.set(0, -10, 0);
+      dummy.scale.set(0.001, 0.001, 0.001);
+      dummy.updateMatrix();
+      grass.setMatrixAt(i, dummy.matrix);
+      continue;
+    }
     dummy.position.set(Math.cos(a) * r, 0, Math.sin(a) * r);
     dummy.rotation.y = Math.random() * Math.PI;
     dummy.scale.set(0.8 + Math.random() * 0.7, 0.55 + Math.random() * 0.85, 1);
@@ -601,7 +712,7 @@ const grassUniforms = { uTime: { value: 0 }, uDay: { value: 0 }, uMoonTint: { va
   grassUniforms.uDay = grassMat.uniforms.uDay;
 }
 
-/* flowers (cute pops of color) */
+/* flowers */
 {
   const petal = new THREE.PlaneGeometry(0.16, 0.16);
   const stem = new THREE.PlaneGeometry(0.03, 0.5); stem.translate(0, 0.25, 0);
@@ -661,7 +772,7 @@ function colored(geo, hex) {
     parts.push(tg);
   }
   for (let k = 0; k < 16; k++) {
-    const a = Math.random() * Math.PI * 2, r = 6 + Math.random() * 24, s = 0.35 + Math.random() * 0.75;
+    const a = Math.random() * Math.PI * 2, r = 10 + Math.random() * 22, s = 0.35 + Math.random() * 0.75;
     const shade = 0.22 + Math.random() * 0.14;
     const rock = colored(
       xg(mergeVertices(new THREE.DodecahedronGeometry(0.55, 0)), 0, 0.2, 0, s, s * 0.55, s, Math.random(), Math.random() * 3, 0),
@@ -673,22 +784,19 @@ function colored(geo, hex) {
   const veg = new THREE.Mesh(mergeGeometries(parts), new THREE.MeshLambertMaterial({ vertexColors: true }));
   veg.castShadow = true; veg.receiveShadow = true;
   scene.add(veg);
-  /* distant tree silhouettes */
   const far = [];
   for (let i = 0; i < 26; i++) {
     const a = (i / 26) * Math.PI * 2 + Math.random() * 0.2;
     const r = 42 + Math.random() * 26, s = 1.6 + Math.random() * 1.6;
     far.push(colored(xg(new THREE.ConeGeometry(2.4, 6.5, 7), 0, 3.2, 0, s, s, s), 0x14291c));
-    const g = far[far.length - 1];
-    g.translate(Math.cos(a) * r, 0, Math.sin(a) * r);
+    far[far.length - 1].translate(Math.cos(a) * r, 0, Math.sin(a) * r);
   }
-  const farMesh = new THREE.Mesh(mergeGeometries(far), new THREE.MeshLambertMaterial({ vertexColors: true }));
-  scene.add(farMesh);
+  scene.add(new THREE.Mesh(mergeGeometries(far), new THREE.MeshLambertMaterial({ vertexColors: true })));
 }
 
 /* clouds */
 const clouds = [];
-let cloudMats = [];
+const cloudMats = [];
 {
   const c = document.createElement('canvas'); c.width = 256; c.height = 128;
   const x = c.getContext('2d');
@@ -713,7 +821,7 @@ let cloudMats = [];
 }
 
 /* fireflies (night) + petals (day) */
-function makeMotes(count, color, size) {
+function makeMotes(count, color, size, dayVis) {
   const pos = new Float32Array(count*3), phase = new Float32Array(count), speed = new Float32Array(count);
   for (let i = 0; i < count; i++) {
     const a = Math.random() * Math.PI * 2, r = 3 + Math.random() * 19;
@@ -724,7 +832,8 @@ function makeMotes(count, color, size) {
   g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   g.setAttribute('aPhase', new THREE.BufferAttribute(phase, 1));
   g.setAttribute('aSpeed', new THREE.BufferAttribute(speed, 1));
-  const uniforms = { uTime: { value: 0 }, uPixelRatio: { value: 1 }, uDay: { value: 0 } };
+  const uniforms = { uTime: { value: 0 }, uPixelRatio: { value: 1 }, uDay: { value: 0 },
+    uColor: { value: new THREE.Color(color) }, uDayVis: { value: dayVis } };
   const m = new THREE.ShaderMaterial({
     transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false,
     uniforms,
@@ -751,62 +860,307 @@ function makeMotes(count, color, size) {
       '#include <colorspace_fragment>', '}'
     ].join('\n')
   });
-  m.uniforms.uColor = { value: new THREE.Color(color) };
-  m.uniforms.uDayVis = { value: 0 };
   const pts = new THREE.Points(g, m);
   scene.add(pts);
   return { uniforms, mat: m };
 }
-const fireflies = makeMotes(80, 0xb8ff8c, 5.0);
-fireflies.mat.uniforms.uDayVis.value = 0;
-const petals = makeMotes(60, 0xffc4d6, 4.0);
-petals.mat.uniforms.uDayVis.value = 1;
+const fireflies = makeMotes(80, 0xb8ff8c, 5.0, 0);
+const petals = makeMotes(60, 0xffc4d6, 4.0, 1);
 
-/* ================= PANDA — the storyteller ================= */
+/* ================= PLAYGROUND ================= */
+const PLAY_R = 9;
+const woodMat = new THREE.MeshLambertMaterial({ color: 0x8a5a33 });
+const woodDark = new THREE.MeshLambertMaterial({ color: 0x6e4525 });
+/* round wooden fence */
+{
+  const parts = [];
+  const N = 18;
+  for (let i = 0; i < N; i++) {
+    const a = (i / N) * Math.PI * 2;
+    parts.push(xg(new THREE.BoxGeometry(0.22, 1.1, 0.22), Math.cos(a) * 10.2, 0.55, Math.sin(a) * 10.2, 1, 1, 1, 0, -a, 0));
+  }
+  const fence = new THREE.Mesh(mergeGeometries(parts), woodMat);
+  fence.castShadow = true; fence.receiveShadow = true;
+  scene.add(fence);
+  for (const y of [0.42, 0.82]) {
+    const rail = new THREE.Mesh(new THREE.TorusGeometry(10.2, 0.07, 8, 64), woodDark);
+    rail.rotation.x = Math.PI / 2; rail.position.y = y;
+    rail.castShadow = true;
+    scene.add(rail);
+  }
+  /* little gate sign */
+  const sign = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.5, 0.08), woodMat);
+  sign.position.set(0, 1.15, 10.2); sign.castShadow = true;
+  scene.add(sign);
+}
+/* food bowl with bamboo */
+const bowlPos = new THREE.Vector3(4.6, 0, 2.8);
+{
+  const bowl = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.4, 0.3, 20), woodDark);
+  bowl.position.set(bowlPos.x, 0.15, bowlPos.z); bowl.castShadow = true; bowl.receiveShadow = true;
+  scene.add(bowl);
+  const shoots = [];
+  for (let i = 0; i < 4; i++) {
+    const h = 0.9 + Math.random() * 0.5;
+    shoots.push(xg(new THREE.CylinderGeometry(0.06, 0.06, h, 8), (Math.random() - 0.5) * 0.4, 0.3 + h / 2, (Math.random() - 0.5) * 0.4,
+      1, 1, 1, (Math.random() - 0.5) * 0.35, 0, (Math.random() - 0.5) * 0.35));
+  }
+  const bamboo = new THREE.Mesh(mergeGeometries(shoots), new THREE.MeshLambertMaterial({ color: 0x3f9e4d }));
+  bamboo.position.set(bowlPos.x, 0, bowlPos.z); bamboo.castShadow = true;
+  scene.add(bamboo);
+}
+/* balls */
+const balls = [];
+const ballCols = [0xff5a5a, 0x4a9eff, 0xffd166];
+function spawnBall(x, z, kick) {
+  const idx = balls.length % ballCols.length;
+  const mesh = new THREE.Mesh(new THREE.SphereGeometry(0.34, 24, 18),
+    new THREE.MeshStandardMaterial({ color: ballCols[idx], roughness: 0.5 }));
+  mesh.castShadow = true; mesh.receiveShadow = true;
+  mesh.position.set(x, 0.34, z);
+  scene.add(mesh);
+  const b = { mesh, vel: new THREE.Vector3(), vy: 0, y: 0.34, cool: 0 };
+  if (kick) { b.vel.set((Math.random() - 0.5) * 6, 0, (Math.random() - 0.5) * 6); b.vy = 2.5; }
+  balls.push(b);
+  if (balls.length > 5) { const old = balls.shift(); scene.remove(old.mesh); }
+  return b;
+}
+spawnBall(-3.2, 1.5); spawnBall(2.2, -3.4);
+function updateBalls(dt) {
+  for (const b of balls) {
+    b.cool = Math.max(0, (b.cool || 0) - dt);
+    const p = b.mesh.position;
+    p.x += b.vel.x * dt; p.z += b.vel.z * dt;
+    b.vy -= 16 * dt; b.y += b.vy * dt;
+    if (b.y <= 0.34) {
+      b.y = 0.34;
+      if (b.vy < -1.2) { b.vy *= -0.5; if (window.SFX && window.SFX.boing) window.SFX.boing(); }
+      else b.vy = 0;
+    }
+    p.y = b.y;
+    b.vel.multiplyScalar(Math.max(0, 1 - 1.6 * dt));
+    const r = Math.hypot(p.x, p.z);
+    if (r > PLAY_R) {
+      const nx = p.x / r, nz = p.z / r;
+      p.x = nx * PLAY_R; p.z = nz * PLAY_R;
+      const dot = b.vel.x * nx + b.vel.z * nz;
+      b.vel.x -= 2 * dot * nx; b.vel.z -= 2 * dot * nz;
+      b.vel.multiplyScalar(0.7);
+    }
+    b.mesh.rotation.x += b.vel.z * dt * 2;
+    b.mesh.rotation.z -= b.vel.x * dt * 2;
+    /* panda collision: gentle nudge only (during playBall the bat handles it) */
+    const dx = p.x - pandaGroup.position.x, dz = p.z - pandaGroup.position.z;
+    const d = Math.hypot(dx, dz);
+    if (d < 1.0 && d > 0.01 && pet.state !== 'playBall') {
+      const push = 1.4;
+      b.vel.x += (dx / d) * push; b.vel.z += (dz / d) * push;
+      b.cool = (b.cool || 0);
+      if (b.cool <= 0 && window.SFX && window.SFX.boing) { window.SFX.boing(); b.cool = 0.4; }
+    }
+  }
+}
+/* tap ripple marker */
+const _groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+const ripples = [];
+function spawnRipple(x, z) {
+  const mesh = new THREE.Mesh(new THREE.RingGeometry(0.3, 0.44, 32),
+    new THREE.MeshBasicMaterial({ color: 0xffc4d6, transparent: true, opacity: 0.9, side: THREE.DoubleSide, depthWrite: false }));
+  mesh.rotation.x = -Math.PI / 2;
+  mesh.position.set(x, 0.06, z);
+  scene.add(mesh);
+  ripples.push({ mesh, t: 0 });
+}
+function updateRipples(dt) {
+  for (let i = ripples.length - 1; i >= 0; i--) {
+    const r = ripples[i];
+    r.t += dt;
+    const k = r.t / 0.8;
+    r.mesh.scale.setScalar(1 + k * 2.4);
+    r.mesh.material.opacity = Math.max(0, 0.9 * (1 - k));
+    if (k >= 1) { scene.remove(r.mesh); r.mesh.geometry.dispose(); r.mesh.material.dispose(); ripples.splice(i, 1); }
+  }
+}
+/* floating hearts */
+let heartTex = null;
+function getHeartTex() {
+  if (heartTex) return heartTex;
+  const c = document.createElement('canvas'); c.width = c.height = 64;
+  const x = c.getContext('2d');
+  x.font = '48px serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
+  x.fillText('💗', 32, 34);
+  heartTex = new THREE.CanvasTexture(c); heartTex.colorSpace = THREE.SRGBColorSpace;
+  return heartTex;
+}
+const hearts = [];
+function spawnHeart(x, y, z, big) {
+  const m = new THREE.SpriteMaterial({ map: getHeartTex(), transparent: true, depthWrite: false, fog: false });
+  const sp = new THREE.Sprite(m);
+  const s = (big ? 0.55 : 0.35) * (0.8 + Math.random() * 0.4);
+  sp.scale.set(s, s, 1);
+  sp.position.set(x + (Math.random() - 0.5) * 0.6, y, z + (Math.random() - 0.5) * 0.6);
+  scene.add(sp);
+  hearts.push({ sp, life: 1 });
+}
+function spawnHearts(n, big) {
+  const p = pandaGroup.position;
+  for (let i = 0; i < n; i++) spawnHeart(p.x, 2.2 + Math.random() * 0.5, p.z, big);
+}
+let crumbTex = null;
+function getCrumbTex() {
+  if (crumbTex) return crumbTex;
+  const c = document.createElement('canvas'); c.width = c.height = 16;
+  const x = c.getContext('2d');
+  x.fillStyle = '#7dd87d';
+  x.beginPath(); x.arc(8, 8, 6, 0, 7); x.fill();
+  x.fillStyle = '#a8e8a8';
+  x.beginPath(); x.arc(6, 6, 2.5, 0, 7); x.fill();
+  crumbTex = new THREE.CanvasTexture(c); crumbTex.colorSpace = THREE.SRGBColorSpace;
+  return crumbTex;
+}
+const crumbs = [];
+function spawnCrumbs(n) {
+  const p = pandaGroup.position;
+  const fx = Math.sin(pandaGroup.rotation.y), fz = Math.cos(pandaGroup.rotation.y);
+  for (let i = 0; i < n; i++) {
+    const m = new THREE.SpriteMaterial({ map: getCrumbTex(), transparent: true, depthWrite: false, fog: false });
+    const sp = new THREE.Sprite(m);
+    const s = 0.09 + Math.random() * 0.08;
+    sp.scale.set(s, s, 1);
+    sp.position.set(p.x + fx * 0.55 + (Math.random() - 0.5) * 0.3, 1.15 + Math.random() * 0.2, p.z + fz * 0.55 + (Math.random() - 0.5) * 0.3);
+    scene.add(sp);
+    crumbs.push({ sp, vx: (Math.random() - 0.5) * 1.6 + fx, vy: 1.2 + Math.random() * 1.4, vz: (Math.random() - 0.5) * 1.6 + fz, life: 1 });
+  }
+}
+function updateCrumbs(dt) {
+  for (let i = crumbs.length - 1; i >= 0; i--) {
+    const c = crumbs[i];
+    c.life -= dt * 1.5;
+    c.vy -= 9 * dt;
+    c.sp.position.x += c.vx * dt;
+    c.sp.position.y += c.vy * dt;
+    c.sp.position.z += c.vz * dt;
+    if (c.sp.position.y < 0.03) { c.sp.position.y = 0.03; c.vy *= -0.3; }
+    c.sp.material.opacity = Math.max(0, c.life);
+    if (c.life <= 0) { scene.remove(c.sp); c.sp.material.dispose(); crumbs.splice(i, 1); }
+  }
+}
+function updateHearts(dt) {
+  for (let i = hearts.length - 1; i >= 0; i--) {
+    const h = hearts[i];
+    h.life -= dt * 0.55;
+    h.sp.position.y += dt * 1.1;
+    h.sp.position.x += Math.sin(h.life * 6) * dt * 0.3;
+    h.sp.material.opacity = Math.max(0, h.life);
+    if (h.life <= 0) { scene.remove(h.sp); h.sp.material.dispose(); hearts.splice(i, 1); }
+  }
+}
+/* tossed bamboo snack */
+let snackMesh = null;
+function spawnSnack(x, z) {
+  if (snackMesh) { scene.remove(snackMesh); snackMesh = null; }
+  const g = new THREE.Group();
+  for (let i = 0; i < 3; i++) {
+    const s = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.8, 8),
+      new THREE.MeshLambertMaterial({ color: 0x46b358 }));
+    s.position.set((i - 1) * 0.14, 0.4, (i % 2) * 0.1);
+    s.rotation.z = (i - 1) * 0.25;
+    s.castShadow = true;
+    g.add(s);
+  }
+  g.position.set(x, 0, z);
+  scene.add(g);
+  snackMesh = g;
+  return g;
+}
+
+/* draggable bamboo toy */
+let bambooItem = null, bambooRespawnT = -1, dragItem = false;
+function buildBambooItem() {
+  const g = new THREE.Group();
+  const stalkMat = new THREE.MeshLambertMaterial({ color: 0x46b358 });
+  const leafMat = new THREE.MeshLambertMaterial({ color: 0x63cf72, side: THREE.DoubleSide });
+  for (let i = 0; i < 3; i++) {
+    const hh = 1.0 + i * 0.28;
+    const s = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.08, hh, 10), stalkMat);
+    s.position.set((i - 1) * 0.17, hh / 2, (i % 2) * 0.12);
+    s.rotation.z = (i - 1) * 0.16;
+    s.castShadow = true;
+    g.add(s);
+    for (let l = 0; l < 2; l++) {
+      const leaf = new THREE.Mesh(new THREE.PlaneGeometry(0.36, 0.15), leafMat);
+      leaf.position.set((i - 1) * 0.17 + (l ? 0.22 : -0.22), hh * (0.62 + l * 0.2), 0.05);
+      leaf.rotation.set(0.5, l ? 0.7 : -0.7, l ? 0.5 : -0.5);
+      g.add(leaf);
+    }
+  }
+  const ring = new THREE.Mesh(new THREE.RingGeometry(0.5, 0.64, 40),
+    new THREE.MeshBasicMaterial({ color: 0x9dff9d, transparent: true, opacity: 0.45, side: THREE.DoubleSide, depthWrite: false }));
+  ring.rotation.x = -Math.PI / 2;
+  ring.position.y = 0.04;
+  g.add(ring);
+  g.userData.ring = ring;
+  return g;
+}
+function spawnBambooItem(nearX, nearZ) {
+  if (bambooItem) { scene.remove(bambooItem); bambooItem = null; }
+  bambooItem = buildBambooItem();
+  let x, z;
+  if (nearX !== undefined) {
+    const a = Math.random() * Math.PI * 2, r = 1.6 + Math.random() * 2.2;
+    x = nearX + Math.cos(a) * r; z = nearZ + Math.sin(a) * r;
+  } else {
+    const a = Math.random() * Math.PI * 2, r = 2.5 + Math.random() * 5;
+    x = Math.cos(a) * r; z = Math.sin(a) * r;
+  }
+  const rr = Math.hypot(x, z), cl = Math.min(1, (PLAY_R - 1) / Math.max(0.01, rr));
+  bambooItem.position.set(x * cl, 0, z * cl);
+  scene.add(bambooItem);
+}
+/* ================= BABY PANDA ================= */
 const furWhite = new THREE.MeshStandardMaterial({ color: 0xf6f1e8, roughness: 0.85 });
 const furDark = new THREE.MeshStandardMaterial({ color: 0x232228, roughness: 0.9 });
 const eyeMat = new THREE.MeshStandardMaterial({ color: 0x141316, roughness: 0.25 });
 const noseMat = new THREE.MeshStandardMaterial({ color: 0x1c1b1f, roughness: 0.5 });
 const blushMat = new THREE.MeshStandardMaterial({ color: 0xff9eb5, roughness: 0.9 });
 
-const NECK = new THREE.Vector3(0, 0.62, 0.10);
-const BODY_C = new THREE.Vector3(0, 0.02, -0.06);
-const SPH = (r) => new THREE.SphereGeometry(r, 40, 28);
+const NECK = new THREE.Vector3(0, 1.28, 0.08);
+const SPH = (r) => new THREE.SphereGeometry(r, 36, 26);
 
 const pandaGroup = new THREE.Group();
-const PANDA_SCALE = 2.3;
-const rig = new THREE.Group();
-const inner = new THREE.Group();
-inner.add(rig);
-pandaGroup.add(inner);
 scene.add(pandaGroup);
 
-let bodyMesh, tailMesh, armLMesh, armRMesh, headGroup, eyeLMesh, eyeRMesh, earLMesh, earRMesh, mouthMesh;
+let bodyMesh, tailMesh, headGroup;
+let legFL, legFR, legBL, legBR, earLMesh, earRMesh, eyeLMesh, eyeRMesh, mouthMesh;
 
 function solidMesh(geo, mat, pivot, parent) {
   if (pivot) geo.translate(-pivot.x, -pivot.y, -pivot.z);
   const mesh = new THREE.Mesh(geo, mat);
   mesh.castShadow = true; mesh.receiveShadow = true;
   if (pivot) mesh.position.copy(pivot);
-  (parent || rig).add(mesh);
+  (parent || pandaGroup).add(mesh);
   return mesh;
 }
 
 function buildPanda() {
-  bodyMesh = solidMesh(xg(SPH(0.55), 0, 0.02, -0.06, 1, 1.12, 0.92), furWhite, BODY_C);
-  solidMesh(mergeGeometries([
-    xg(SPH(0.20), -0.30, -0.44, 0.22, 1, 0.72, 1.35),
-    xg(SPH(0.20), 0.30, -0.44, 0.22, 1, 0.72, 1.35)
-  ]), furDark, null);
-  const tailBase = new THREE.Vector3(0, 0.02, -0.48);
-  tailMesh = solidMesh(xg(SPH(0.15), 0, 0.02, -0.58), furWhite, tailBase);
-  const shL = new THREE.Vector3(-0.44, 0.34, 0.12), shR = new THREE.Vector3(0.44, 0.34, 0.12);
-  armLMesh = solidMesh(xg(new THREE.CapsuleGeometry(0.13, 0.32, 8, 20), -0.50, 0.12, 0.12, 1, 1, 1, -0.2, 0, 0.35), furDark, shL);
-  armRMesh = solidMesh(xg(new THREE.CapsuleGeometry(0.13, 0.32, 8, 20), 0.50, 0.12, 0.12, 1, 1, 1, -0.2, 0, -0.35), furDark, shR);
+  /* chubby body */
+  bodyMesh = solidMesh(xg(SPH(0.42), 0, 0.55, -0.02, 1, 1.08, 0.92), furWhite, null);
+  /* back feet */
+  const hbL = new THREE.Vector3(-0.27, 0.32, -0.02), hbR = new THREE.Vector3(0.27, 0.32, -0.02);
+  legBL = solidMesh(xg(SPH(0.20), -0.27, 0.16, 0.06, 1, 0.7, 1.3), furDark, hbL);
+  legBR = solidMesh(xg(SPH(0.20), 0.27, 0.16, 0.06, 1, 0.7, 1.3), furDark, hbR);
+  /* front arms */
+  const shL = new THREE.Vector3(-0.34, 0.72, 0.20), shR = new THREE.Vector3(0.34, 0.72, 0.20);
+  legFL = solidMesh(xg(new THREE.CapsuleGeometry(0.11, 0.28, 8, 18), -0.36, 0.42, 0.22), furDark, shL);
+  legFR = solidMesh(xg(new THREE.CapsuleGeometry(0.11, 0.28, 8, 18), 0.36, 0.42, 0.22), furDark, shR);
+  /* tail */
+  const tailBase = new THREE.Vector3(0, 0.55, -0.40);
+  tailMesh = solidMesh(xg(SPH(0.12), 0, 0.55, -0.48), furWhite, tailBase);
 
+  /* BIG baby head */
   headGroup = new THREE.Group();
   headGroup.position.copy(NECK);
-  rig.add(headGroup);
+  pandaGroup.add(headGroup);
   const hg = (geo, mat, pivot) => {
     const pv = pivot || NECK;
     geo.translate(-pv.x, -pv.y, -pv.z);
@@ -816,49 +1170,54 @@ function buildPanda() {
     headGroup.add(mesh);
     return mesh;
   };
+  hg(xg(SPH(0.5), 0, 1.30, 0.10), furWhite, NECK);
+  hg(xg(SPH(0.17), 0, 1.18, 0.52, 1.2, 0.8, 0.8), furWhite, NECK);
+  /* eye patches */
   hg(mergeGeometries([
-    xg(SPH(0.42), 0, 0.80, 0.16),
-    xg(SPH(0.16), 0, 0.70, 0.50, 1.25, 0.75, 0.75)
-  ]), furWhite, NECK);
-  hg(mergeGeometries([
-    xg(SPH(0.115), -0.165, 0.86, 0.53, 1, 1.3, 0.5, 0, 0, 0.25),
-    xg(SPH(0.115), 0.165, 0.86, 0.53, 1, 1.3, 0.5, 0, 0, -0.25),
-    xg(SPH(0.06), 0, 0.735, 0.615, 1.3, 0.8, 0.8)
+    xg(SPH(0.13), -0.20, 1.36, 0.52, 1, 1.25, 0.55, 0, 0, 0.2),
+    xg(SPH(0.13), 0.20, 1.36, 0.52, 1, 1.25, 0.55, 0, 0, -0.2)
   ]), furDark, NECK);
-  const ebL = new THREE.Vector3(-0.29, 1.0, 0.08), ebR = new THREE.Vector3(0.29, 1.0, 0.08);
-  earLMesh = hg(xg(SPH(0.155), -0.29, 1.08, 0.08, 1, 1, 0.55), furDark, ebL);
-  earRMesh = hg(xg(SPH(0.155), 0.29, 1.08, 0.08, 1, 1, 0.55), furDark, ebR);
-  const blushGeo = SPH(0.045); blushGeo.scale(1.5, 0.85, 0.5);
-  hg(mergeGeometries([xg(blushGeo.clone(), -0.26, 0.74, 0.478), xg(blushGeo.clone(), 0.26, 0.74, 0.478)]), blushMat, NECK);
-  const eyeGeo = SPH(0.075), hlGeo = SPH(0.022);
+  /* ears */
+  const ebL = new THREE.Vector3(-0.30, 1.52, 0.02), ebR = new THREE.Vector3(0.30, 1.52, 0.02);
+  earLMesh = hg(xg(SPH(0.15), -0.34, 1.66, 0.02, 1, 1, 0.6), furDark, ebL);
+  earRMesh = hg(xg(SPH(0.15), 0.34, 1.66, 0.02, 1, 1, 0.6), furDark, ebR);
+  /* big blush */
+  const blushGeo = SPH(0.06); blushGeo.scale(1.4, 0.8, 0.5);
+  hg(mergeGeometries([xg(blushGeo.clone(), -0.34, 1.22, 0.46), xg(blushGeo.clone(), 0.34, 1.22, 0.46)]), blushMat, NECK);
+  /* BIG sparkly eyes */
+  const eyeGeo = SPH(0.095), hlGeo = SPH(0.028), hl2Geo = SPH(0.012);
   const hlMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
   const mkEye = (sx) => {
     const e = new THREE.Mesh(eyeGeo, eyeMat);
-    e.position.set(sx * 0.165 - NECK.x, 0.88 - NECK.y, 0.545 - NECK.z);
+    e.position.set(sx * 0.20 - NECK.x, 1.38 - NECK.y, 0.56 - NECK.z);
     const hl = new THREE.Mesh(hlGeo, hlMat);
-    hl.position.set(sx * 0.018, 0.024, 0.058);
-    e.add(hl); e.castShadow = true;
+    hl.position.set(sx * 0.025, 0.032, 0.075);
+    const hl2 = new THREE.Mesh(hl2Geo, hlMat);
+    hl2.position.set(sx * -0.02, -0.025, 0.082);
+    e.add(hl); e.add(hl2); e.castShadow = true;
     headGroup.add(e); return e;
   };
   eyeLMesh = mkEye(-1); eyeRMesh = mkEye(1);
-  mouthMesh = new THREE.Mesh(new THREE.TorusGeometry(0.07, 0.016, 12, 24, Math.PI), noseMat);
+  /* nose + smile */
+  hg(xg(SPH(0.055), 0, 1.24, 0.66, 1.25, 0.8, 0.8), noseMat, NECK);
+  mouthMesh = new THREE.Mesh(new THREE.TorusGeometry(0.06, 0.015, 12, 24, Math.PI), noseMat);
   mouthMesh.rotation.z = Math.PI;
-  mouthMesh.position.set(0 - NECK.x, 0.655 - NECK.y, 0.612 - NECK.z);
+  mouthMesh.position.set(0 - NECK.x, 1.14 - NECK.y, 0.645 - NECK.z);
   mouthMesh.castShadow = true;
   headGroup.add(mouthMesh);
-
-  rig.updateMatrixWorld(true);
-  const box = new THREE.Box3().setFromObject(rig);
-  const center = box.getCenter(new THREE.Vector3());
-  const size = box.getSize(new THREE.Vector3());
-  const s = 1 / (Math.max(size.x, size.y, size.z) || 1);
-  inner.scale.setScalar(s);
-  inner.position.set(-center.x * s, -box.min.y * s, -center.z * s);
-  pandaGroup.scale.setScalar(PANDA_SCALE);
 }
 buildPanda();
+spawnBambooItem();
 
-/* panda animation state */
+/* ---------- pet brain: states ---------- */
+const pet = {
+  state: 'idle', stateT: 0,
+  tx: 0, tz: 0, moving: false, walkPhase: 0,
+  action: null, actionT: 0,
+  eatT: 0, napT: 0, munchT: 0,
+  snack: null,
+  playT: 0, kicks: 0, batT: -1, batDone: false, batCool: 0
+};
 const anim = {
   asleep: true, eyeOpen: 0.08,
   nextBlink: 2.5, blinkT: -1,
@@ -868,21 +1227,212 @@ const anim = {
   mouseX: 0, mouseY: 0
 };
 function triggerWave() { if (anim.waveT < 0) { anim.waveT = 0; anim.wagBoost = 1; } }
+function petKick() { /* happy bounce when nudging ball */ }
 
+function petSayHi() { triggerWave(); }
+
+function updatePet(dt, t) {
+  const p = pandaGroup.position;
+  pet.stateT += dt;
+  let wantMove = false;
+
+  if (pet.action) {
+    /* one-shot cute actions */
+    pet.actionT += dt;
+    pet.moving = false;
+    const at = pet.actionT;
+    if (pet.action === 'roll') {
+      const k = Math.min(1, at / 0.9);
+      pandaGroup.rotation.x = -k * Math.PI * 2;
+      pandaGroup.position.y = Math.sin(k * Math.PI) * 0.5;
+      if (k >= 1) { pet.action = null; pandaGroup.rotation.x = 0; pandaGroup.position.y = 0; }
+    } else if (pet.action === 'spin') {
+      const k = Math.min(1, at / 0.7);
+      pandaGroup.rotation.y += dt * 9;
+      if (k >= 1) { pet.action = null; }
+    } else if (pet.action === 'hop') {
+      const k = Math.min(1, at / 0.55);
+      pandaGroup.position.y = Math.sin(k * Math.PI) * 0.45;
+      if (k >= 1) { pet.action = null; pandaGroup.position.y = 0; }
+    }
+    return false;
+  }
+
+  const distTo = (x, z) => Math.hypot(x - p.x, z - p.z);
+  const faceTowards = (x, z, k) => {
+    const des = Math.atan2(x - p.x, z - p.z);
+    let d = des - pandaGroup.rotation.y;
+    while (d > Math.PI) d -= Math.PI * 2;
+    while (d < -Math.PI) d += Math.PI * 2;
+    pandaGroup.rotation.y += d * Math.min(1, (k || 8) * dt);
+  };
+
+  switch (pet.state) {
+    case 'idle':
+      if (pet.stateT > 1.2 + Math.random() * 2.2) {
+        const r = Math.random();
+        if (r < 0.55) {
+          const a = Math.random() * Math.PI * 2, rr = 1.5 + Math.random() * 4.5;
+          pet.tx = Math.cos(a) * rr; pet.tz = Math.sin(a) * rr;
+          pet.state = 'wander'; pet.stateT = 0;
+        } else if (r < 0.68 && balls.length) { pet.state = 'playBall'; pet.stateT = 0; pet.playT = 0; pet.kicks = 0; pet.batT = -1; pet.batCool = 0; }
+        else if (r < 0.78) { pet.tx = bowlPos.x; pet.tz = bowlPos.z; pet.state = 'toBowl'; pet.stateT = 0; }
+        else if (r < 0.88) { pet.action = Math.random() < 0.5 ? 'roll' : 'spin'; pet.actionT = 0; }
+        else { pet.state = 'nap'; pet.stateT = 0; pet.napT = 3 + Math.random() * 3; }
+      }
+      break;
+    case 'wander':
+      wantMove = true;
+      if (distTo(pet.tx, pet.tz) < 0.4) { pet.state = 'idle'; pet.stateT = 0; }
+      if (pet.stateT > 12) { pet.state = 'idle'; pet.stateT = 0; }
+      break;
+    case 'playBall': {
+      if (!balls.length) { pet.state = 'idle'; pet.stateT = 0; break; }
+      pet.playT += dt;
+      pet.batCool = Math.max(0, pet.batCool - dt);
+      let best = balls[0], bd = 1e9;
+      for (const b of balls) { const d = distTo(b.mesh.position.x, b.mesh.position.z); if (d < bd) { bd = d; best = b; } }
+      if (pet.batT >= 0) {
+        /* mid-swing: plant feet, hit at the swipe moment */
+        pet.batT += dt;
+        if (!pet.batDone && pet.batT > 0.28) {
+          pet.batDone = true;
+          const dx = best.mesh.position.x - p.x, dz = best.mesh.position.z - p.z;
+          const d = Math.max(0.25, Math.hypot(dx, dz));
+          const pw = 4.5 + Math.random() * 2;
+          best.vel.x += (dx / d) * pw + (Math.random() - 0.5) * 1.5;
+          best.vel.z += (dz / d) * pw + (Math.random() - 0.5) * 1.5;
+          best.vy = 3 + Math.random() * 1.5;
+          best.cool = 0.5;
+          if (window.SFX && window.SFX.boing) window.SFX.boing();
+        }
+        if (pet.batT > 0.7) { pet.batT = -1; pet.kicks++; pet.batCool = 0.9 + Math.random() * 0.8; }
+      } else if (bd < 1.25 && pet.batCool <= 0) {
+        pet.batT = 0; pet.batDone = false;
+      } else {
+        pet.tx = best.mesh.position.x; pet.tz = best.mesh.position.z;
+        wantMove = true;
+        /* celebratory hop while chasing, occasionally */
+        if (Math.random() < dt * 0.5 && !pet.action) { pet.action = 'hop'; pet.actionT = 0; }
+      }
+      if (pet.kicks >= 4 || pet.playT > 16) {
+        spawnHearts(5, true);
+        pet.action = 'spin'; pet.actionT = 0;
+        if (window.SFX && window.SFX.chime) window.SFX.chime();
+        pet.state = 'idle'; pet.stateT = -2.5;
+      }
+      break;
+    }
+    case 'toBowl':
+      pet.tx = bowlPos.x - 0.9; pet.tz = bowlPos.z + 0.4;
+      wantMove = true;
+      if (distTo(pet.tx, pet.tz) < 0.5) { pet.state = 'munchBowl'; pet.stateT = 0; pet.eatT = 0; }
+      if (pet.stateT > 14) { pet.state = 'idle'; pet.stateT = 0; }
+      break;
+    case 'munchBowl':
+      pet.eatT += dt;
+      pet.munchT += dt;
+      if (pet.munchT > 0.45) { pet.munchT = 0; if (window.SFX && window.SFX.munch) window.SFX.munch(); spawnCrumbs(3); }
+      if (pet.eatT > 3.2) {
+        spawnHearts(4, true);
+        pet.action = 'hop'; pet.actionT = 0;
+        pet.state = 'idle'; pet.stateT = -2;
+      }
+      break;
+    case 'toSnack':
+      if (!pet.snack) { pet.state = 'idle'; pet.stateT = 0; break; }
+      pet.tx = pet.snack.x; pet.tz = pet.snack.z;
+      wantMove = true;
+      if (distTo(pet.tx, pet.tz) < 0.7) { pet.state = 'munchSnack'; pet.stateT = 0; pet.eatT = 0; }
+      if (pet.stateT > 14) { pet.state = 'idle'; pet.stateT = 0; }
+      break;
+    case 'munchSnack':
+      pet.eatT += dt;
+      pet.munchT += dt;
+      if (pet.munchT > 0.45) { pet.munchT = 0; if (window.SFX && window.SFX.munch) window.SFX.munch(); spawnCrumbs(3); }
+      if (pet.eatT > 3.2) {
+        if (snackMesh) { scene.remove(snackMesh); snackMesh = null; }
+        pet.snack = null;
+        spawnHearts(5, true);
+        pet.action = 'hop'; pet.actionT = 0;
+        pet.state = 'idle'; pet.stateT = -2;
+      }
+      break;
+    case 'nap':
+      if (pet.stateT > pet.napT) { pet.state = 'idle'; pet.stateT = 0; pet.action = 'hop'; pet.actionT = 0; }
+      break;
+    case 'munchItem':
+      pet.eatT += dt;
+      pet.munchT += dt;
+      if (pet.munchT > 0.45) { pet.munchT = 0; if (window.SFX && window.SFX.munch) window.SFX.munch(); spawnCrumbs(4); }
+      if (pet.eatT > 3.4) {
+        spawnHearts(6, true);
+        pet.action = 'spin'; pet.actionT = 0;
+        if (window.SFX && window.SFX.chime) window.SFX.chime();
+        pet.state = 'idle'; pet.stateT = -2;
+      }
+      break;
+  }
+
+  if (wantMove) {
+    faceTowards(pet.tx, pet.tz);
+    const dx = pet.tx - p.x, dz = pet.tz - p.z;
+    const d = Math.hypot(dx, dz);
+    if (d > 0.05) {
+      const sp = 1.35 * dt;
+      p.x += (dx / d) * Math.min(sp, d);
+      p.z += (dz / d) * Math.min(sp, d);
+      const rr = Math.hypot(p.x, p.z);
+      if (rr > PLAY_R) { p.x *= PLAY_R / rr; p.z *= PLAY_R / rr; }
+    }
+    pet.moving = true;
+    pet.walkPhase += dt * 11;
+  } else {
+    pet.moving = false;
+  }
+  return pet.moving;
+}
+
+/* ---------- panda animation ---------- */
 function animatePanda(now, dt) {
   const t = now / 1000;
   const k = Math.min(1, dt * 6);
-  const br = Math.sin(t * (anim.asleep ? 1.1 : 2.4));
-  bodyMesh.scale.set(1 + 0.015 * br, 1 + 0.03 * br, 1 + 0.015 * br);
-  headGroup.position.y = NECK.y + 0.012 * br;
-  anim.wagBoost = Math.max(0, anim.wagBoost - dt * 0.8);
-  tailMesh.rotation.y = Math.sin(t * 2.8) * 0.35 * (0.4 + anim.wagBoost * 2.5);
-  armLMesh.rotation.x = Math.sin(t * 2.4 + 1) * 0.06;
-  if (anim.waveT < 0) armRMesh.rotation.x = Math.sin(t * 2.4 + 2) * 0.06;
+  const napping = pet.state === 'nap';
+  const munching = pet.state === 'munchBowl' || pet.state === 'munchSnack' || pet.state === 'munchItem';
 
-  anim.eyeOpen += ((anim.asleep ? 0.08 : 1) - anim.eyeOpen) * Math.min(1, dt * 4);
+  if (!anim.asleep) updatePet(dt, t);
+  else { pet.moving = false; }
+
+  /* breathing */
+  const br = Math.sin(t * (anim.asleep ? 1.1 : 2.4));
+  const napS = napping ? 0.92 : 1;
+  bodyMesh.scale.set(1 + 0.015 * br, (1 + 0.03 * br) * napS, 1 + 0.015 * br);
+  bodyMesh.position.y = napping ? -0.12 : 0;
+  headGroup.position.y = NECK.y + 0.012 * br - (napping ? 0.18 : 0);
+
+  /* walk cycle */
+  if (pet.moving) {
+    const w = pet.walkPhase;
+    legFL.rotation.x = Math.sin(w) * 0.6;
+    legBR.rotation.x = Math.sin(w) * 0.6;
+    legFR.rotation.x = Math.sin(w + Math.PI) * 0.6;
+    legBL.rotation.x = Math.sin(w + Math.PI) * 0.6;
+    pandaGroup.position.y = Math.abs(Math.sin(w)) * 0.07;
+  } else if (!pet.action) {
+    legFL.rotation.x *= 0.9; legFR.rotation.x *= 0.9;
+    legBL.rotation.x *= 0.9; legBR.rotation.x *= 0.9;
+    if (pandaGroup.position.y > 0.01 && !pet.action) pandaGroup.position.y *= 0.9;
+  }
+
+  /* tail */
+  anim.wagBoost = Math.max(0, anim.wagBoost - dt * 0.8);
+  tailMesh.rotation.y = Math.sin(t * 2.8) * 0.35 * (0.4 + anim.wagBoost * 2.5 + (pet.moving ? 1.2 : 0));
+
+  /* eyes */
+  const eyeTarget = (anim.asleep || napping) ? 0.08 : (munching ? 0.16 : 1);
+  anim.eyeOpen += (eyeTarget - anim.eyeOpen) * Math.min(1, dt * 4);
   let blinkS = 1;
-  if (!anim.asleep) {
+  if (!anim.asleep && !napping) {
     if (anim.blinkT < 0 && t > anim.nextBlink) anim.blinkT = 0;
     if (anim.blinkT >= 0) {
       anim.blinkT += dt / 0.22;
@@ -892,13 +1442,28 @@ function animatePanda(now, dt) {
   }
   eyeLMesh.scale.y = eyeRMesh.scale.y = anim.eyeOpen * blinkS;
 
+  /* head */
   if (anim.asleep) {
     headGroup.rotation.y += (0 - headGroup.rotation.y) * k;
     headGroup.rotation.x += (0.3 - headGroup.rotation.x) * k;
     headGroup.rotation.z += (0 - headGroup.rotation.z) * k;
+  } else if (munching) {
+    const mt = t * 9;
+    headGroup.rotation.x += ((0.62 + Math.sin(mt) * 0.15) - headGroup.rotation.x) * k;
+    headGroup.rotation.y *= 0.9;
+    headGroup.rotation.z = Math.sin(mt * 0.5) * 0.13;
+    headGroup.scale.setScalar(1 + 0.022 * Math.abs(Math.sin(mt)));
+    mouthMesh.scale.setScalar(1 + 0.32 * Math.abs(Math.sin(mt)));
+    earLMesh.rotation.z = Math.sin(mt * 0.7) * 0.22;
+    earRMesh.rotation.z = -Math.sin(mt * 0.7) * 0.22;
+  } else if (napping) {
+    headGroup.rotation.x += (0.42 - headGroup.rotation.x) * k;
+    headGroup.rotation.y *= 0.9;
+    headGroup.rotation.z += (0.12 - headGroup.rotation.z) * k;
   } else {
     headGroup.rotation.y += (anim.mouseX * 0.5 - headGroup.rotation.y) * k;
     headGroup.rotation.x += ((-anim.mouseY * 0.28 + Math.sin(t * 1.3) * 0.03) - headGroup.rotation.x) * k;
+    headGroup.scale.setScalar(1);
     if (anim.tiltT < 0 && t > anim.nextTilt) anim.tiltT = 0;
     if (anim.tiltT >= 0) {
       anim.tiltT += dt / 1.4;
@@ -907,7 +1472,8 @@ function animatePanda(now, dt) {
     }
   }
 
-  if (!anim.asleep) {
+  /* ear wiggle */
+  if (!anim.asleep && !napping) {
     if (anim.wigT < 0 && t > anim.nextWiggle) anim.wigT = 0;
     if (anim.wigT >= 0) {
       anim.wigT += dt / 0.7;
@@ -916,86 +1482,193 @@ function animatePanda(now, dt) {
     }
   }
 
+  /* batting a ball: cute paw swipe */
+  if (pet.batT >= 0) {
+    const bt = pet.batT;
+    if (bt < 0.28) {
+      const k2 = bt / 0.28;
+      legFR.rotation.z = 2.3 * k2;
+      legFR.rotation.x = -0.4 * k2;
+    } else {
+      const k2 = Math.min(1, (bt - 0.28) / 0.34);
+      legFR.rotation.z = 2.3 - 3.4 * k2;
+      legFR.rotation.x = -0.4 + 0.9 * k2;
+    }
+    pandaGroup.rotation.z = Math.sin(Math.min(1, bt / 0.6) * Math.PI) * 0.1;
+    mouthMesh.scale.setScalar(1 + 0.25 * Math.sin(Math.min(1, bt / 0.6) * Math.PI));
+  } else if (!pet.moving) {
+    legFR.rotation.z *= 0.85;
+  }
+  /* wave + hop */
   if (anim.waveT >= 0) {
     anim.waveT += dt / 1.5;
     if (anim.waveT >= 1) {
       anim.waveT = -1;
-      armRMesh.rotation.z = 0; armRMesh.rotation.x = 0;
+      legFR.rotation.z = 0;
       mouthMesh.scale.setScalar(1);
-      pandaGroup.position.y = 0;
-      pandaGroup.scale.setScalar(PANDA_SCALE);
     } else {
       const wt = anim.waveT;
-      armRMesh.rotation.z = 2.1 * Math.min(1, wt * 3) + Math.sin(wt * 22) * 0.35 * Math.sin(Math.PI * Math.min(1, wt * 1.15));
+      legFR.rotation.z = 2.0 * Math.min(1, wt * 3) + Math.sin(wt * 22) * 0.3 * Math.sin(Math.PI * Math.min(1, wt * 1.15));
       mouthMesh.scale.setScalar(1 + 0.35 * Math.sin(Math.PI * Math.min(1, wt)));
-      const hop = Math.sin(Math.PI * Math.min(1, wt * 1.35));
-      pandaGroup.position.y = hop * 0.35;
-      const sq = Math.sin(Math.PI * wt);
-      pandaGroup.scale.set(PANDA_SCALE * (1 + 0.07 * sq), PANDA_SCALE * (1 - 0.1 * sq), PANDA_SCALE * (1 + 0.07 * sq));
+      if (!pet.moving && !pet.action) pandaGroup.position.y = Math.sin(Math.PI * Math.min(1, wt * 1.35)) * 0.3;
     }
   }
 }
 
-/* expose scene controls to the app */
+/* expose controls */
 window.Panda = {
   wave: triggerWave,
   sleep(v) { anim.asleep = !!v; if (!v) triggerWave(); },
-  onTap: null
+  onTap: null,
+  feed() {
+    if (anim.asleep || pet.state === 'toSnack' || pet.state === 'munchSnack') return false;
+    const a = Math.random() * Math.PI * 2, r = 2 + Math.random() * 2.5;
+    const x = pandaGroup.position.x + Math.cos(a) * r, z = pandaGroup.position.z + Math.sin(a) * r;
+    const rr = Math.hypot(x, z), cl = Math.min(1, (PLAY_R - 0.5) / Math.max(0.01, rr));
+    spawnSnack(x * cl, z * cl);
+    pet.snack = { x: x * cl, z: z * cl };
+    pet.action = null; pet.state = 'toSnack'; pet.stateT = 0;
+    return true;
+  },
+  goTo(x, z) {
+    if (anim.asleep || pet.state === 'munchItem') return false;
+    pet.action = null;
+    pet.state = 'wander'; pet.stateT = 0;
+    pet.tx = x; pet.tz = z;
+    return true;
+  },
+  play() {
+    if (anim.asleep || pet.state === 'playBall') return false;
+    const p = pandaGroup.position;
+    const a = Math.random() * Math.PI * 2;
+    spawnBall(p.x + Math.cos(a) * 2.4, p.z + Math.sin(a) * 2.4, true);
+    if (window.SFX && window.SFX.pop) window.SFX.pop();
+    pet.action = null; pet.state = 'playBall'; pet.stateT = 0;
+    pet.playT = 0; pet.kicks = 0; pet.batT = -1; pet.batCool = 0.4;
+    return true;
+  }
 };
 window.Scene = {
-  setDay(v) { dayState.target = v ? 1 : 0; }
+  setDay(v) { dayState.target = v ? 1 : 0; },
+  setFollow(v) { followPanda = !!v; camDTarget = followPanda ? FOCUS_D : WIDE_D; }
 };
+window.__pet = { get bamboo() { return bambooItem; }, panda: pandaGroup, pet, cam: camera, get dragItem() { return dragItem; } };
 
-/* tap panda vs drag-orbit */
+/* tap: panda vs ground | drag: bamboo toy | orbit */
 const raycaster = new THREE.Raycaster();
 const tapNDC = new THREE.Vector2();
 let downX = 0, downY = 0, lastPX = 0, lastPY = 0;
 let dragging = false;
 let camYaw = 0.55, camPitch = 0.13, yawV = 0, pitchV = 0, idleT = 0;
-function tapPanda(e) {
+let followPanda = false;
+let camD = 13.5, camDTarget = 13.5;
+const WIDE_D = 13.5, FOCUS_D = 5.5;
+function setRay(e) {
   const r = canvas.getBoundingClientRect();
   tapNDC.set(((e.clientX - r.left) / r.width) * 2 - 1, -(((e.clientY - r.top) / r.height) * 2 - 1));
   raycaster.setFromCamera(tapNDC, camera);
+}
+function tapAt(e) {
+  setRay(e);
   if (raycaster.intersectObject(pandaGroup, true).length > 0) {
     if (window.Panda.onTap) window.Panda.onTap();
     else triggerWave();
+    return;
+  }
+  const pt = new THREE.Vector3();
+  if (raycaster.ray.intersectPlane(_groundPlane, pt)) {
+    if (Math.hypot(pt.x, pt.z) <= PLAY_R && window.Panda.goTo(pt.x, pt.z)) {
+      spawnRipple(pt.x, pt.z);
+      if (window.SFX && window.SFX.tap) window.SFX.tap();
+    }
   }
 }
 canvas.addEventListener('pointerdown', (e) => {
-  dragging = true; idleT = 0;
+  idleT = 0;
+  if (bambooItem && !anim.asleep) {
+    setRay(e);
+    if (raycaster.intersectObject(bambooItem, true).length > 0) {
+      dragItem = true; dragging = false;
+      bambooItem.position.y = 0.18;
+      bambooItem.userData.ring.material.opacity = 0.9;
+      try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
+      return;
+    }
+  }
+  dragging = true;
   downX = lastPX = e.clientX; downY = lastPY = e.clientY;
   try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
 });
 canvas.addEventListener('pointermove', (e) => {
+  if (dragItem && bambooItem) {
+    setRay(e);
+    const pt = new THREE.Vector3();
+    if (raycaster.ray.intersectPlane(_groundPlane, pt)) {
+      const r = Math.hypot(pt.x, pt.z), cl = Math.min(1, PLAY_R / Math.max(0.01, r));
+      bambooItem.position.set(pt.x * cl, 0.18, pt.z * cl);
+    }
+    return;
+  }
   if (!dragging) return;
   const dx = e.clientX - lastPX, dy = e.clientY - lastPY;
   lastPX = e.clientX; lastPY = e.clientY;
   camYaw -= dx * 0.0052;
-  camPitch = THREE.MathUtils.clamp(camPitch + dy * 0.0032, 0.03, 0.5);
+  camPitch = THREE.MathUtils.clamp(camPitch + dy * 0.0032, 0.05, 0.62);
   yawV = -dx * 0.0052; pitchV = dy * 0.0032;
   idleT = 0;
 });
+function endDragItem() {
+  if (!dragItem) return;
+  dragItem = false;
+  if (bambooItem) {
+    bambooItem.position.y = 0;
+    const dx = bambooItem.position.x - pandaGroup.position.x;
+    const dz = bambooItem.position.z - pandaGroup.position.z;
+    if (Math.hypot(dx, dz) < 1.5 && !anim.asleep) {
+      pandaGroup.rotation.y = Math.atan2(dx, dz);
+      pet.action = null; pet.state = 'munchItem'; pet.stateT = 0; pet.eatT = 0; pet.munchT = 0;
+      scene.remove(bambooItem); bambooItem = null;
+      bambooRespawnT = 2.5;
+      if (window.SFX && window.SFX.chime) window.SFX.chime();
+    }
+  }
+}
 canvas.addEventListener('pointerup', (e) => {
+  if (dragItem) { endDragItem(); return; }
   if (!dragging) return;
   dragging = false;
-  if (Math.hypot(e.clientX - downX, e.clientY - downY) < 10) tapPanda(e);
+  if (Math.hypot(e.clientX - downX, e.clientY - downY) < 10) tapAt(e);
 });
-canvas.addEventListener('pointercancel', () => { dragging = false; });
+canvas.addEventListener('pointercancel', () => { dragging = false; endDragItem(); });
+canvas.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  idleT = 0;
+  const lo = followPanda ? 3.5 : 8, hi = followPanda ? 11 : 20;
+  camDTarget = THREE.MathUtils.clamp(camDTarget + e.deltaY * 0.018, lo, hi);
+}, { passive: false });
 window.addEventListener('pointermove', (e) => {
   anim.mouseX = (e.clientX / window.innerWidth) * 2 - 1;
   anim.mouseY = -((e.clientY / window.innerHeight) * 2 - 1);
 });
 
-/* camera: drag-orbit + inertia + idle drift */
+/* camera */
 const orbitTarget = new THREE.Vector3(0, 1.05, 0);
+const _followT = new THREE.Vector3();
 function updateCamera(t, dt) {
   if (!dragging) {
-    camYaw += yawV; camPitch = THREE.MathUtils.clamp(camPitch + pitchV, 0.03, 0.5);
+    camYaw += yawV; camPitch = THREE.MathUtils.clamp(camPitch + pitchV, 0.05, 0.62);
     yawV *= 0.94; pitchV *= 0.94;
     idleT += dt;
     if (idleT > 5) camYaw += dt * 0.045;
   }
-  const cp = Math.cos(camPitch), D = 10.5;
+  if (followPanda) _followT.set(pandaGroup.position.x, 1.0, pandaGroup.position.z);
+  else _followT.set(0, 1.05, 0);
+  const fk = Math.min(1, dt * 3);
+  orbitTarget.x += (_followT.x - orbitTarget.x) * fk;
+  orbitTarget.y += (_followT.y - orbitTarget.y) * fk;
+  orbitTarget.z += (_followT.z - orbitTarget.z) * fk;
+  camD += (camDTarget - camD) * Math.min(1, dt * 2.2);
+  const cp = Math.cos(camPitch), D = camD * (camera.aspect < 0.55 ? 1.12 : 1);
   const px = anim.mouseX * 0.5, py = anim.mouseY * 0.3;
   camera.position.set(
     orbitTarget.x + D * Math.sin(camYaw) * cp + px,
@@ -1015,12 +1688,12 @@ function applyDay(k) {
   renderer.setClearColor(_fogC, 1);
   _mC.lerpColors(NIGHT.moon, DAY.sun, k);
   moon.color.copy(_mC);
-  moon.intensity = 1.15 + 0.45 * k;
+  moon.intensity = 1.15 + 0.7 * k;
   _mP.lerpVectors(moonDir, sunDir, k).multiplyScalar(45);
   moon.position.copy(_mP);
   _hC.lerpColors(NIGHT.hemiSky, DAY.hemiSky, k);
   hemi.color.copy(_hC);
-  hemi.intensity = 0.75 + 0.35 * k;
+  hemi.intensity = 0.75 + 0.55 * k;
   lantern.intensity = 9 * (1 - k);
   starsMat.opacity = 0.8 * (1 - k);
   fireflies.uniforms.uDay.value = k;
@@ -1030,12 +1703,12 @@ function applyDay(k) {
   for (const m of cloudMats) { m.opacity = 0.35 + 0.25 * k; m.color.copy(_cloudC); }
 }
 
-/* auto quality: drop pixel ratio if slow */
-let qLevel = 0, ftAcc = 0, ftN = 0;
+/* auto quality */
+let qLevel = IS_MOBILE ? 1 : 0, ftAcc = 0, ftN = 0;
 function layout() {
   const W = window.innerWidth, H = window.innerHeight;
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  renderer.setPixelRatio([dpr, 1.5, 1.15][qLevel]);
+  const dpr = Math.min(window.devicePixelRatio || 1, IS_MOBILE ? 1.5 : 2);
+  renderer.setPixelRatio([dpr, IS_MOBILE ? 1.25 : 1.5, 1][qLevel]);
   renderer.setSize(W, H, false);
   camera.aspect = W / H;
   camera.updateProjectionMatrix();
@@ -1061,6 +1734,17 @@ function animate() {
   petals.uniforms.uTime.value = t;
   for (const c of clouds) { c.position.x += dt * 0.4; if (c.position.x > 150) c.position.x = -150; }
   animatePanda(now, dt);
+  updateBalls(dt);
+  updateHearts(dt);
+  updateCrumbs(dt);
+  updateRipples(dt);
+  if (bambooRespawnT > 0) {
+    bambooRespawnT -= dt;
+    if (bambooRespawnT <= 0) spawnBambooItem(pandaGroup.position.x, pandaGroup.position.z);
+  }
+  if (bambooItem && !dragItem) {
+    bambooItem.userData.ring.material.opacity = 0.32 + 0.22 * Math.sin(t * 3.2);
+  }
   updateCamera(t, dt);
   renderer.render(scene, camera);
   ftAcc += dt; ftN++;
@@ -1124,8 +1808,12 @@ const SFX = {
   flip() { this.noise(0.35, 0.14, 900, 0.8); },
   tear() { this.noise(0.28, 0.22, 2400, 0.7); this.noise(0.2, 0.16, 900, 1, 0.05); },
   chime() { const self = this; [880, 1175, 1568].forEach((f, i) => self.tone(f, 0.32, 'sine', 0.07, null, i * 0.12)); },
+  munch() { this.noise(0.09, 0.14, 1800, 2); this.noise(0.07, 0.1, 900, 2, 0.08); },
+  boing() { this.tone(300, 0.16, 'sine', 0.12, 620); },
+  pop() { this.tone(500, 0.09, 'sine', 0.13, 950); },
   toggle() { this.muted = !this.muted; localStorage.setItem('sfx_muted', this.muted ? '1' : '0'); return this.muted; }
 };
+window.SFX = SFX;
 document.addEventListener('pointerdown', () => SFX.ensure(), { once: true });
 
 /* ---------- toast ---------- */
@@ -1168,22 +1856,32 @@ subEl.addEventListener('click', () => {
 });
 
 /* panda tap lines */
-const PANDA_LINES = [
-  'Hehe, nhột quá đi~ ♥',
-  'Em chạm vào tớ nè!',
-  'Tớ là linh vật của hai đứa mình đó~',
-  'Hôm nay em xinh lắm luôn á~',
-  'Ôm tớ một cái đi~',
-  '*vẫy vẫy* chào em~',
-  'Suỵt… tớ kể em nghe bí mật này: anh ấy nhớ em lắm đó~',
-  'Tớ thích nhất là được ở cạnh hai đứa mình~',
-  'Em kéo để xoay quanh tớ xem, view đẹp lắm~',
-  'Tối nay sao đẹp quá ha~'
+const BEO_FACTS = [
+  'Con nghe nói ôm nhau 20 giây là hết stress liền đó cô~',
+  'Nhìn vào mắt nhau lâu lâu là tim đập nhanh hơn đó, con thử rồi nè!',
+  'Nắm tay nhau đi dạo là bài thể dục ngọt ngào nhất luôn á~',
+  'Mấy cặp hay cười cùng nhau thì bên nhau lâu lắm đó cô~',
+  'Ăn món ngon cùng người mình thương là hạnh phúc nhân đôi~',
+  'Con thấy hai người càng ngày càng giống nhau rồi đó, tướng phu thê á!',
+  'Ngủ đủ giấc mới có sức thương nhau nhiều nhiều nha cô~',
+  'Con nghe nói nhớ ai nhiều thì tối sẽ mơ thấy người ta đó~',
+  'Hehe, nhột quá đi~ con là Béo nè!',
+  'Suỵt… con kể cô nghe bí mật này: anh ấy nhớ cô lắm đó~'
 ];
+const BEO_DAY_LINES = [
+  d => 'Hôm nay là ngày thứ ' + d + ' con ở bên hai người rồi đó~',
+  d => 'Con đếm được ' + d + ' ngày yêu nhau rồi nè, nhiều ghê~',
+  d => d + ' ngày rồi đó cô, con vui lắm luôn~'
+];
+function loveDays() { return Math.floor((Date.now() - LOVE_DATE.getTime()) / 86400000); }
 window.Panda.onTap = () => {
   window.Panda.wave();
   SFX.squeak();
-  if (!subtitleBusy && unlocked) say(PANDA_LINES[Math.floor(Math.random() * PANDA_LINES.length)], true);
+  if (!subtitleBusy && unlocked) {
+    const d = loveDays();
+    const pool = Math.random() < 0.45 ? BEO_DAY_LINES.map(f => f(d)) : BEO_FACTS;
+    say(pool[Math.floor(Math.random() * pool.length)], true);
+  }
 };
 
 /* ---------- router ---------- */
@@ -1315,7 +2013,7 @@ async function doUnlock() {
   if (window.Scene) window.Scene.setDay(1);
   window.Panda.sleep(false);
   initHome();
-  await say('Em mở được rồi! Tớ tỉnh rồi nè ♥ Tớ là linh vật của hai đứa mình — để tớ kể em nghe câu chuyện của chúng mình. Ở trên là đồng hồ đếm từng giây phút mình yêu nhau, hai nút dưới là hai chương truyện, em chọn đi~');
+  await say('Cô mở được rồi! Con tỉnh rồi nè ♥ Con là Béo, linh vật của hai người — để con kể cô nghe câu chuyện của chúng mình. Ở trên là đồng hồ đếm từng giây phút hai người yêu nhau, menu bên cạnh có sách với kỉ niệm, cô chọn đi~');
 }
 
 /* ---------- home ---------- */
@@ -1334,7 +2032,7 @@ $('soundToggle').addEventListener('click', () => {
   updateSoundIcon();
   if (!muted) SFX.tap();
 });
-function updateSoundIcon() { $('soundToggle').textContent = SFX.muted ? '🔇' : '🔊'; }
+function updateSoundIcon() { $('sndOn').style.display = SFX.muted ? 'none' : ''; $('sndOff').style.display = SFX.muted ? '' : 'none'; }
 
 /* love timer: counts UP forever */
 function startLoveTimer() { tickLove(); setInterval(tickLove, 1000); }
@@ -1409,7 +2107,7 @@ function goBook() {
   SFX.tap();
   resetBook();
   show('scr-book');
-  say('Chương 1: Cuốn sách bí mật. Anh ấy đã viết tay từng chữ đấy — em mở bìa ra xem đi~', true);
+  say('Chương 1: Cuốn sách bí mật. Anh ấy đã viết tay từng chữ đấy — cô mở bìa ra xem đi~', true);
 }
 $('bookCover').addEventListener('click', () => {
   if (bookStage !== 0) return;
@@ -1443,7 +2141,7 @@ function setupTear() {
       paper.style.transform = 'translateX(' + (dx > 0 ? 320 : -320) + 'px) rotate(' + (dx > 0 ? 18 : -18) + 'deg)';
       paper.style.opacity = '0';
       setTimeout(() => { paper.style.display = 'none'; renderCounter(); }, 380);
-      say('Hehe, xé rách rồi kìa~', true);
+      say('Hehe, cô xé rách rồi kìa~', true);
     } else {
       paper.style.transition = 'transform .3s,opacity .3s';
       paper.style.transform = 'translateX(0) rotate(0)'; paper.style.opacity = '1';
@@ -1477,7 +2175,7 @@ $('bookNext').addEventListener('click', () => {
         $('photoFrame').classList.add('show');
         SFX.chime();
         $('bookHome').style.display = '';
-        setTimeout(() => { window.Panda.wave(); say('Trong đầu ổng chỉ có mỗi em thôi đó~', true); }, 1100);
+        setTimeout(() => { window.Panda.wave(); say('Trong đầu ổng chỉ có mỗi cô thôi đó~', true); }, 1100);
       });
     });
   }, 1050);
@@ -1490,7 +2188,7 @@ let memLoaded = false, memItems = [], memIdx = 0;
 function goMemory() {
   SFX.tap();
   show('scr-memory');
-  say('Chương 2: Những kỉ niệm. Kéo ngang để xem từng khoảnh khắc của hai đứa nhé~', true);
+  say('Chương 2: Những kỉ niệm. Kéo ngang để xem từng khoảnh khắc của hai người nhé~', true);
   if (memLoaded) return; memLoaded = true;
   fetch('memories.json')
     .then(r => r.json())
@@ -1547,15 +2245,41 @@ $('goBook').addEventListener('click', goBook);
 $('goMemory').addEventListener('click', goMemory);
 $('memBack').addEventListener('click', () => { SFX.tap(); show('scr-home'); });
 
+/* ---------- pet actions ---------- */
+let feedCool = 0, playCool = 0;
+$('feedBtn').addEventListener('click', () => {
+  const now = Date.now();
+  if (now - feedCool < 5000) { toast('đợi bé ăn xong đã nhé~'); return; }
+  feedCool = now;
+  SFX.pop();
+  if (window.Panda.feed()) say('Ngoàm ngoàm~ ngon quá đi cô ơi!', true);
+});
+$('playBtn').addEventListener('click', () => {
+  const now = Date.now();
+  if (now - playCool < 5000) { toast('đợi chút nhé~'); return; }
+  playCool = now;
+  if (window.Panda.play()) say('Chơi bóng với con nè!', true);
+});
+let followOn = false;
+$('focusBtn').addEventListener('click', () => {
+  SFX.tap();
+  followOn = !followOn;
+  $('focusBtn').classList.toggle('active', followOn);
+  if (window.Scene) window.Scene.setFollow(followOn);
+  if (followOn) { window.Panda.wave(); say('Con đây nè~ ♥', true); }
+});
+
 /* ---------- boot ---------- */
 function onPandaReady() {
   setTimeout(() => {
-    if (!unlocked) say('Suỵt… tớ đang ngủ đây. Nhập mật mã 1609 để đánh thức tớ dậy nhé~');
+    if (!unlocked) say('Suỵt… con đang ngủ đây. Nhập mật mã 1609 để đánh thức con dậy nhé~');
   }, 1400);
 }
 if (window.__heroBooted) onPandaReady();
 else window.addEventListener('panda-ready', onPandaReady, { once: true });
 window.addEventListener('resize', sizePattern);
+
+
 
 </script>
 </body>
